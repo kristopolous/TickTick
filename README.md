@@ -4,7 +4,7 @@ TickTick enables you to put JSON in your bash scripts.  Yes, just encapsulate th
 
 # Example
 
-<code>
+<pre>
 #!/bin/bash
 
 . ticktick.sh
@@ -36,4 +36,4 @@ echo "Indexing an array, doing variable assignments"
 
 person=``people.HR[0]``
 echo $person ``people.HR[1]``
-</code>
+</pre>
