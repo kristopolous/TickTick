@@ -175,7 +175,8 @@ __tick_fun_tokenize_expression () {
 __tick_fun_parse() {
   local open=0
   local echoopts=''
-  while read token; do
+
+  while read -r token; do
     case "$token" in
       '``') (( open++ )) ;;
       __tick_fun_append) echoopts='-n' ;;
@@ -205,7 +206,7 @@ __tick_fun_tokenize()  {
 
   awk -F '``' '{\
     if (NF < 2) {\
-      printf $0\
+      printf "%s", $0\
     } else {\
       if (length($1))\
         printf "__tick_fun_append\n%sEOL\n", $1;\

@@ -18,12 +18,14 @@
 
 `` people.Engineering = [ "Darren", "Edith", "Frank" ] ``
 
+echo "Iteration"
+
 for employee in ``people.Engineering``; do
-  echo ${!employee}
+  echo "  - ${!employee}"
 done
 
-m=``params.Extensions.js``
+echo
+echo "Indexing an array, doing variable assignments"
 
-``params.Extensions.ruby="rb"``
-
-echo $m ``params.Extensions.ruby``
+person0=``people.HR[0]``
+echo $person0 ``people.HR[1]``
