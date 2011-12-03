@@ -21,7 +21,7 @@
 echo "Iteration"
 
 for employee in ``people.Engineering``; do
-  echo "  - ${!employee}"
+  printf "\t%s\n" ${!employee}
 done
 
 echo

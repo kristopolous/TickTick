@@ -118,7 +118,7 @@ __tick_json_parse_value () {
       ;;
   esac
 
-  # Keep track of things that are a collecction
+  # Keep track of things that are a collection
   if [ $collection ] && [ $__tick_var_collection ] ; then 
     echo -n "__tick_collection_$__tick_var_prefix$prej=1;"
   fi
@@ -145,8 +145,8 @@ __tick_fun_parse_expression () {
       suffix="$suffix$token"
     else
       case "$token" in
-        '$') prefix="${prefix}DOLLARSIGN" ;;
-        '['|.) prefix="${prefix}_" ;;
+        '$') prefix="$prefix"DOLLARSIGN ;;
+        '['|.) prefix="$prefix"_ ;;
         "'"|']') ;;
         =) done=1 ;;
         *) prefix="$prefix$token"
@@ -188,12 +188,11 @@ __tick_fun_parse() {
             __tick_var_collection=''
             out=`echo $token | __tick_fun_tokenize_expression | __tick_fun_parse_expression`
             echo $echoopts "$out"
-            unset echoopts 
           fi
         else
           echo $echoopts "${token/%EOL/}"
-          unset echoopts 
         fi
+        unset echoopts 
         ;;
     esac
   done
