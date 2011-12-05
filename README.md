@@ -2,6 +2,24 @@
 
 TickTick enables you to put JSON in your bash scripts.  Yes, just encapsulate them with two back-ticks.
 
+## Runtime
+A few array manipulation runtime directives are supported:
+
+ * push
+ * pop
+ * reverse
+ * shift
+ * unshift
+ * length
+
+Along with assignment operations, and Javscript like indexing into objects and arrays.
+
+Additionally, bash variables "$[name]" are preserved in the ticktick blocks.  For instance, once could do
+
+`` Var.Data = [] ``
+`` Var.Data.push($key) ``
+bashvar=`` Var.Data.pop() ``
+
 # Example
 
 <pre>

@@ -150,17 +150,41 @@ __tick_fun_parse_expression () {
   local prefix=""
   local suffix=""
 
+  local function=""
+  local arguments=""
+
+  local paren=0
+
   while read -r token; do
     if [ $done ]; then
       suffix="$suffix$token"
     else
       case "$token" in
+        push|pop|shift|unshift|reverse|length) function=$token ;;
+        '(') let paren=$paren+1 ;;
+
+        ')') 
+          let paren=$paren-1
+          if (( paren == 0 )); then
+            if [ -z $__tick_var_collection ]; then
+              echo "__tick_runtime_$function \"$prefix\" \"$arguments\""
+              return
+            fi
+          fi
+          ;;
+
         '$') prefix="$prefix"DOLLARSIGN ;;
         [0-9]*) prefix="$prefix"`printf "%012d" $token` ;;
         '['|.) prefix="$prefix"_ ;;
-        "'"|']') ;;
+        '"'|"'"|']') ;;
         =) done=1 ;;
-        *) prefix="$prefix$token"
+        *) 
+          if (( paren > 0 )); then
+            arguments="$arguments$token"
+          else
+            prefix="$prefix$token" 
+          fi
+          ;;
       esac
     fi
   done
@@ -178,11 +202,14 @@ __tick_fun_parse_expression () {
 }
 
 __tick_fun_tokenize_expression () {
-  local CHAR='[A-Za-z_"\\]'
+  local CHAR='[A-Za-z_\\]'
+  local FUNCTION="(push|pop|unshift|shift|reverse|length)"
   local NUMBER='[0-9]*'
   local STRING="$CHAR*($CHAR*)*"
+  local PAREN="[()]"
+  local QUOTE="[\"\']"
   local SPACE='[[:space:]]+'
-  egrep -ao "$STRING|$NUMBER|$SPACE|." --color=never 
+  egrep -ao "$FUNCTION|$STRING|$QUOTE|$PAREN|$NUMBER|$SPACE|." --color=never 
 }
 
 __tick_fun_parse() {
@@ -240,6 +267,25 @@ __tick_fun_tokenize()  {
   }' $file | __tick_fun_parse | bash
 
   exit
+}
+
+__tick_runtime_length() {
+  echo "length - TODO"
+}
+__tick_runtime_reverse() {
+  echo "reverse - TODO"
+}
+__tick_runtime_unshift() {
+  echo "unshift - TODO"
+}
+__tick_runtime_shift() {
+  echo "shift - TODO"
+}
+__tick_runtime_pop() {
+  echo "pop - TODO"
+}
+__tick_runtime_push() {
+  echo "push - TODO"
 }
 
 [ $__tick_var_tokenized ] || __tick_fun_tokenize
