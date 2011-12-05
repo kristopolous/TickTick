@@ -23,13 +23,20 @@ __tick_json_tokenize () {
 __tick_json_parse_array () {
   local index=0
   local ary=''
+
   read -r token
+
   case "$token" in
     ']') ;;
     *)
       while :
       do
-        __tick_json_parse_value "$1" "$index"
+        # We pad the indices to be 12 digits wide so that 
+        # lexical sorting will always be equivalent to numerical
+        # sorting. This is also done in the expression block
+        # below.
+        __tick_json_parse_value "$1" "`printf "%012d" $index`"
+
         let index=$index+1
         ary="$ary""$value" 
 
@@ -51,6 +58,7 @@ __tick_json_parse_object () {
   local key
   local obj=''
   read -r token
+
   case "$token" in
     '}') ;;
     *)
@@ -141,12 +149,14 @@ __tick_fun_parse_expression () {
   local done=""
   local prefix=""
   local suffix=""
+
   while read -r token; do
     if [ $done ]; then
       suffix="$suffix$token"
     else
       case "$token" in
         '$') prefix="$prefix"DOLLARSIGN ;;
+        [0-9]*) prefix="$prefix"`printf "%012d" $token` ;;
         '['|.) prefix="$prefix"_ ;;
         "'"|']') ;;
         =) done=1 ;;
@@ -154,12 +164,13 @@ __tick_fun_parse_expression () {
       esac
     fi
   done
+
   if [ $suffix ]; then
     __tick_var_prefix="$prefix"
     echo "$suffix" | __tick_json_tokenize | __tick_json_parse
   elif [ -z $__tick_var_collection ]; then
     if (( $(( __tick_collection_$prefix )) )); then
-      echo '${!'__tick_data_$prefix'*}'
+      echo '${!'__tick_data_$prefix'_*}'
     else
       echo '${'__tick_data_$prefix'}'
     fi
@@ -167,10 +178,11 @@ __tick_fun_parse_expression () {
 }
 
 __tick_fun_tokenize_expression () {
-  local CHAR='[A-Za-z_0-9"\\]'
+  local CHAR='[A-Za-z_"\\]'
+  local NUMBER='[0-9]*'
   local STRING="$CHAR*($CHAR*)*"
   local SPACE='[[:space:]]+'
-  egrep -ao "$STRING|$SPACE|." --color=never 
+  egrep -ao "$STRING|$NUMBER|$SPACE|." --color=never 
 }
 
 __tick_fun_parse() {
