@@ -7,7 +7,6 @@ A few array manipulation runtime directives are supported:
 
  * push
  * pop
- * reverse
  * shift
  * unshift
  * length
