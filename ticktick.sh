@@ -12,10 +12,11 @@ __tick_json_tokenize () {
   local ESCAPE='(\\[^u[:cntrl:]]|\\u[0-9a-fA-F]{4})'
   local CHAR='[^[:cntrl:]"\\]'
   local STRING="\"$CHAR*($ESCAPE$CHAR*)*\""
+  local VARIABLE="\\\$[A-Za-z0-9_]*"
   local NUMBER='-?(0|[1-9][0-9]*)([.][0-9]*)?([eE][+-]?[0-9]*)?'
   local KEYWORD='null|false|true'
   local SPACE='[[:space:]]+'
-  egrep -ao "$STRING|$NUMBER|$KEYWORD|$SPACE|." --color=never |\
+  egrep -ao "$STRING|$VARIABLE|$NUMBER|$KEYWORD|$SPACE|." --color=never |\
     egrep -v "^$SPACE$"  # eat whitespace
 }
 
@@ -56,7 +57,7 @@ __tick_json_parse_object () {
       while :
       do
         case "$token" in
-          '"'*'"') key=$token ;;
+          '"'*'"'|\$[A-Za-z0-9_]*) key=$token ;;
           *) __tick_json_throw "EXPECTED string GOT ${token:-EOF}" ;;
         esac
 

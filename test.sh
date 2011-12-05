@@ -2,11 +2,14 @@
 
 . ticktick.sh
 
+# Variable Assignment
+bob=Bob
+
 ``
   people = {
     "HR" : [
       "Alice",
-      "Bob",
+      $bob,
       "Carol"
     ],
     "Sales": {
