@@ -160,14 +160,14 @@ __tick_fun_parse_expression () {
       suffix="$suffix$token"
     else
       case "$token" in
-        push|pop|shift|unshift|reverse|length) function=$token ;;
+        push|pop|shift|unshift|length) function=$token ;;
         '(') let paren=$paren+1 ;;
 
         ')') 
           let paren=$paren-1
           if (( paren == 0 )); then
             if [ -z $__tick_var_collection ]; then
-              echo "__tick_runtime_$function \"$prefix\" \"$arguments\""
+              echo "__tick_runtime_$function \"$arguments\" __tick_data_$prefix "'${!__tick_data_'"$prefix"'*}'
               return
             fi
           fi
@@ -203,7 +203,7 @@ __tick_fun_parse_expression () {
 
 __tick_fun_tokenize_expression () {
   local CHAR='[A-Za-z_\\]'
-  local FUNCTION="(push|pop|unshift|shift|reverse|length)"
+  local FUNCTION="(push|pop|unshift|shift|length)"
   local NUMBER='[0-9]*'
   local STRING="$CHAR*($CHAR*)*"
   local PAREN="[()]"
@@ -272,9 +272,6 @@ __tick_fun_tokenize()  {
 __tick_runtime_length() {
   echo "length - TODO"
 }
-__tick_runtime_reverse() {
-  echo "reverse - TODO"
-}
 __tick_runtime_unshift() {
   echo "unshift - TODO"
 }
@@ -285,7 +282,14 @@ __tick_runtime_pop() {
   echo "pop - TODO"
 }
 __tick_runtime_push() {
-  echo "push - TODO"
+  local value=$1
+  local base=$2
+  local lastarg="${!#}"
+
+  let nextval=${lastarg/$base/}+1
+  nextval=`printf "%012d" $nextval`
+
+  eval "$base$nextval=$value"
 }
 
 [ $__tick_var_tokenized ] || __tick_fun_tokenize

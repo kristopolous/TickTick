@@ -21,7 +21,6 @@ bob=Bob
 
 `` people.Engineering = [ "Darren", "Edith", "Frank" ] ``
 `` people.Engineering.push("Isaac") ``
-`` people.Engineering.pop() ``
 
 echo "Iteration"
 
