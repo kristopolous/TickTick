@@ -1,8 +1,8 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # This is from https://github.com/dominictarr/JSON.sh
 # See LICENSE for more info. {{{
-__tick_json_tokenize () {
+__tick_json_tokenize() {
   local ESCAPE='(\\[^u[:cntrl:]]|\\u[0-9a-fA-F]{4})'
   local CHAR='[^[:cntrl:]"\\]'
   local STRING="\"$CHAR*($ESCAPE$CHAR*)*\""
@@ -10,11 +10,10 @@ __tick_json_tokenize () {
   local NUMBER='-?(0|[1-9][0-9]*)([.][0-9]*)?([eE][+-]?[0-9]*)?'
   local KEYWORD='null|false|true'
   local SPACE='[[:space:]]+'
-  egrep -ao "$STRING|$VARIABLE|$NUMBER|$KEYWORD|$SPACE|." --color=never |\
-    egrep -v "^$SPACE$"  # eat whitespace
+  egrep -ao "$STRING|$VARIABLE|$NUMBER|$KEYWORD|$SPACE|." --color=never | egrep -v "^$SPACE$"  # eat whitespace
 }
 
-__tick_json_parse_array () {
+__tick_json_parse_array() {
   local index=0
   local ary=''
 
@@ -46,7 +45,7 @@ __tick_json_parse_array () {
   esac
 }
 
-__tick_json_parse_object () {
+__tick_json_parse_object() {
   local key
   local obj=''
   read -r token
@@ -80,15 +79,11 @@ __tick_json_parse_object () {
   esac
 }
 
-__tick_json_parse_value () {
-  local jpath="${1:+$1,}$2"
-  local prej="${jpath//,/_}"
+__tick_json_parse_value() {
+  local jpath="${1:+$1_}$2"
+  local prej=${jpath//\"/}
 
-  prej=${prej//\"/}
-
-  if [ "$prej" ]; then
-    prej="_$prej"
-  fi
+  [ "$prej" ] && prej="_$prej"
 
   case "$token" in
     '{') __tick_json_parse_object "$jpath" ;;
@@ -96,20 +91,19 @@ __tick_json_parse_value () {
 
     *) 
       value=$token 
-
-      printf "%s%s=%s\n" "__tick_data_$__tick_var_prefix" "$prej" "$value" 
+      echo __tick_data_$__tick_var_prefix$prej=$value 
       ;;
   esac
 }
 
-__tick_json_parse () {
+__tick_json_parse() {
   read -r token
   __tick_json_parse_value
   read -r token
 }
 # }}} End of code from github
 
-__tick_fun_tokenize_expression () {
+__tick_fun_tokenize_expression() {
   local CHAR='[A-Za-z_$\\]'
   local FUNCTION="(push|pop|shift|items|length)"
   local NUMBER='[0-9]*'
@@ -120,7 +114,7 @@ __tick_fun_tokenize_expression () {
   egrep -ao "$FUNCTION|$STRING|$QUOTE|$PAREN|$NUMBER|$SPACE|." --color=never 
 }
 
-__tick_fun_parse_expression () {
+__tick_fun_parse_expression() {
   local done=
   local prefix=
   local suffix=
@@ -175,6 +169,8 @@ __tick_fun_parse() {
   local echoopts=''
 
   while read -r token; do
+    token=${token/#S/}
+    token=${token/%E/}
     case "$token" in
       '``') (( open++ )) ;;
       __tick_fun_append) echoopts=-n ;;
@@ -182,8 +178,7 @@ __tick_fun_parse() {
         if (( open % 2 == 1 )); then 
           [ "$token" ] && echo $echoopts "`echo $token | __tick_fun_tokenize_expression | __tick_fun_parse_expression`"
         else
-          token=${token/#SOL/}
-          echo $echoopts "${token/%EOL/}"
+          echo $echoopts "$token"
         fi
         unset echoopts 
         ;;
@@ -191,33 +186,27 @@ __tick_fun_parse() {
   done
 }
 
-__tick_fun_tokenize()  {
+__tick_fun_tokenize() {
   export __tick_var_tokenized=1
 
   local file=`caller 1 | cut -d ' ' -f 3`
 
   awk -F '``' '{\
-    if (NF < 2) {\
-      printf "%s", $0\
-    } else {\
+    if (NF > 1) {\
       if (length($1))\
-        printf "__tick_fun_append\n%sEOL\n", $1;\
-      else\
-        print $1;\
+        print "__tick_fun_append\n"$1;\
       for(i = 2; i <= NF; i++) {\
         if (++open % 2 == 0)\
           print "";\
-        if ( (i + 1) % 2 == 1 && length($(i + 1)))\
+        if (i % 2 == 0 && length($(i + 1)))\
           print "__tick_fun_append";\
-        if ( i % 2 == 1 && length($i))\
-          printf "%s\nSOL%sEOL", FS, $i;\
-        else\
-          printf "%s\n%s", FS, $i;\
+        printf "%s\n%s", FS, $i;\
       }\
-    }\
+    } else\
+      printf "%s", $0;\
     if (open % 2 == 0)\
       print ""\
-  }' $file | __tick_fun_parse | bash
+  }' $file | sed "s/^/S/g;s/$/E/g" | __tick_fun_parse | bash
 
   exit
 }
