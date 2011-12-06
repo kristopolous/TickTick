@@ -17,29 +17,24 @@ __tick_json_parse_array() {
   local index=0
   local ary=''
 
-  read -r token
+  read -r Token
 
-  case "$token" in
+  case "$Token" in
     ']') ;;
     *)
       while :
       do
-        # We pad the indices to be 12 digits wide so that 
-        # lexical sorting will always be equivalent to numerical
-        # sorting. This is also done in the expression block
-        # below.
         __tick_json_parse_value "$1" "`printf "%012d" $index`"
 
         (( index++ ))
-        ary="$ary$value" 
+        ary+="$Value" 
 
-        read -r token
-
-        case "$token" in
+        read -r Token
+        case "$Token" in
           ']') break ;;
-          ',') ary="${ary}_" ;;
+          ',') ary+=_ ;;
         esac
-        read -r token
+        read -r Token
       done
       ;;
   esac
@@ -48,32 +43,29 @@ __tick_json_parse_array() {
 __tick_json_parse_object() {
   local key
   local obj=''
-  read -r token
+  read -r Token
 
-  case "$token" in
+  case "$Token" in
     '}') ;;
     *)
       while :
       do
-        case "$token" in
-          '"'*'"'|\$[A-Za-z0-9_]*) key=$token ;;
+        case "$Token" in
+          '"'*'"'|\$[A-Za-z0-9_]*) key=$Token ;;
         esac
 
-        # Should be colon, let's trust everybody here
-        read -r token
+        read -r Token
 
-        read -r token
+        read -r Token
         __tick_json_parse_value "$1" "$key"
-        obj="$obj$key:$value"        
+        obj+="$key:$Value"        
 
-        read -r token
-
-        case "$token" in
+        read -r Token
+        case "$Token" in
           '}') break ;;
-          ',') obj="${obj}_" ;;
+          ',') obj+=_ ;;
         esac
-
-        read -r token
+        read -r Token
       done
     ;;
   esac
@@ -85,88 +77,75 @@ __tick_json_parse_value() {
 
   [ "$prej" ] && prej="_$prej"
 
-  case "$token" in
+  case "$Token" in
     '{') __tick_json_parse_object "$jpath" ;;
     '[') __tick_json_parse_array  "$jpath" ;;
 
     *) 
-      value=$token 
-      echo __tick_data_$__tick_var_prefix$prej=$value 
+      Value=$Token 
+      echo __tick_data_$Prefix$prej=$Value 
       ;;
   esac
 }
 
 __tick_json_parse() {
-  read -r token
+  read -r Token
   __tick_json_parse_value
-  read -r token
+  read -r Token
 }
 # }}} End of code from github
 
 __tick_fun_tokenize_expression() {
-  local CHAR='[A-Za-z_$\\]'
-  local FUNCTION="(push|pop|shift|items|length)"
-  local NUMBER='[0-9]*'
-  local STRING="$CHAR*($CHAR*)*"
-  local PAREN="[()]"
-  local QUOTE="[\"\']"
-  local SPACE='[[:space:]]+'
+  CHAR='[A-Za-z_$\\]'
+  FUNCTION="(push|pop|shift|items|length)"
+  NUMBER='[0-9]*'
+  STRING="$CHAR*($CHAR*)*"
+  PAREN="[()]"
+  QUOTE="[\"\']"
+  SPACE='[[:space:]]+'
   egrep -ao "$FUNCTION|$STRING|$QUOTE|$PAREN|$NUMBER|$SPACE|." --color=never 
 }
 
 __tick_fun_parse_expression() {
-  local done=
-  local prefix=
-  local suffix=
-
-  local function=
-  local arguments=
-
   local paren=0
 
   while read -r token; do
     if [ $done ]; then
-      suffix="$suffix$token"
+      suffix+="$token"
     else
       case "$token" in
         push|pop|shift|items|length) function=$token ;;
         '(') (( paren++ )) ;;
         ')') 
-          if (( --paren == 0 )); then
-            # There's some tricks here since bash functions don't actually return strings, just integers
-            # A pop is a subshell execution followed by an unassignment for instance.
-            case $function in
-              items) echo '${!__tick_data_'"$prefix"'*}' ;;
-              pop) echo '$( __tick_runtime_last ${!__tick_data_'"$prefix"'*} ); __tick_runtime__pop ${!__tick_data_'"$prefix"'*}' ;;
-              shift) echo '`__tick_runtime_first ${!__tick_data_'"$prefix"'*}`; __tick_runtime__shift ${!__tick_data_'"$prefix"'*}' ;;
-              length) echo '`__tick_runtime_length ${!__tick_data_'"$prefix"'*}`' ;;
-              *) echo "__tick_runtime_$function \"$arguments\" __tick_data_$prefix "'${!__tick_data_'"$prefix"'*}'
-            esac
+          case $function in
+            items) echo '${!__tick_data_'"$Prefix"'*}' ;;
+            pop) echo '$( __tick_runtime_last ${!__tick_data_'"$Prefix"'*} ); __tick_runtime_pop ${!__tick_data_'"$Prefix"'*}' ;;
+            shift) echo '`__tick_runtime_first ${!__tick_data_'"$Prefix"'*}`; __tick_runtime_shift ${!__tick_data_'"$Prefix"'*}' ;;
+            length) echo '`__tick_runtime_length ${!__tick_data_'"$Prefix"'*}`' ;;
+            *) echo "__tick_runtime_$function \"$arguments\" __tick_data_$Prefix "'${!__tick_data_'"$Prefix"'*}'
+          esac
 
-            return
-          fi
+          return
           ;;
 
-        [0-9]*) prefix="$prefix"`printf "%012d" $token` ;;
-        '['|.) prefix="$prefix"_ ;;
+        [0-9]*) Prefix+=`printf "%012d" $token` ;;
+        '['|.) Prefix+=_ ;;
         '"'|"'"|']') ;;
         =) done=1 ;;
-        *) [ $paren -gt 0 ] && arguments="$arguments$token" || prefix="$prefix$token" ;;
+        *) [ $paren -gt 0 ] && arguments+="$token" || Prefix+="$token" ;;
       esac
     fi
   done
 
   if [ $suffix ]; then
-    __tick_var_prefix="$prefix"
     echo "$suffix" | __tick_json_tokenize | __tick_json_parse
   else
-    echo '${__tick_data_'$prefix'}'
+    echo '${__tick_data_'$Prefix'}'
   fi
 }
 
 __tick_fun_parse() {
   local open=0
-  local echoopts=''
 
   while read -r token; do
     token=${token/#S/}
@@ -189,8 +168,6 @@ __tick_fun_parse() {
 __tick_fun_tokenize() {
   export __tick_var_tokenized=1
 
-  local file=`caller 1 | cut -d ' ' -f 3`
-
   awk -F '``' '{\
     if (NF > 1) {\
       if (length($1))\
@@ -202,11 +179,12 @@ __tick_fun_tokenize() {
           print "__tick_fun_append";\
         printf "%s\n%s", FS, $i;\
       }\
-    } else\
+    } else {\
       printf "%s", $0;\
-    if (open % 2 == 0)\
-      print ""\
-  }' $file | sed "s/^/S/g;s/$/E/g" | __tick_fun_parse | bash
+      if (open % 2 == 0)\
+        print ""\
+    }\
+  }' `caller 1 | cut -d ' ' -f 3` | sed "s/^/S/g;s/$/E/g" | __tick_fun_parse | bash
 
   exit
 }
@@ -214,9 +192,9 @@ __tick_fun_tokenize() {
 __tick_runtime_length() { echo $#; }
 __tick_runtime_first() { echo ${!1}; }
 __tick_runtime_last() { eval 'echo $'${!#}; }
-__tick_runtime__pop() { eval unset ${!#}; }
+__tick_runtime_pop() { eval unset ${!#}; }
 
-__tick_runtime__shift() {
+__tick_runtime_shift() {
   local left=
   local right=
 
