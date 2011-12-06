@@ -5,11 +5,11 @@ TickTick enables you to put JSON in your bash scripts.  Yes, just encapsulate th
 ## Runtime
 A few array manipulation runtime directives are supported:
 
- * push
- * pop
- * shift
- * unshift
- * length<sup>1</sup>
+ * push (implemented)
+ * pop (partially implemented)
+ * shift (unimplemented)
+ * unshift (unimplemented)
+ * length<sup>1</sup> (unimplemented)
 
 Along with assignment operations, and Javscript like indexing into objects and arrays.
 
