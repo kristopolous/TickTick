@@ -2,14 +2,7 @@
 
 . ticktick.sh
 
-# Variable Assignment
 bob=Bob
-
-function iteration() {
-  for employee in ``people.Engineering.items()``; do
-    printf "\t%s\n" ${!employee}
-  done
-}
 
 ``
   people = {
@@ -24,21 +17,32 @@ function iteration() {
     }
   }
 ``
+
+function printEmployees() {
+  echo
+  echo "  The ``people.Engineering.length()``" "Employees listed are:"
+
+  for employee in ``people.Engineering.items()``; do
+    printf "    - %s\n" ${!employee}
+  done
+
+  echo 
+}
+
+echo "Base Assignment"
 `` people.Engineering = [ "Darren", "Edith", "Frank" ] ``
+printEmployees
+
+echo "Pushed a new element, Isaac onto the array"
 `` people.Engineering.push("Isaac") ``
-
-
-
-echo "Iteration"
-iteration
+printEmployees
 
 echo "Shifted the first element off: "`` people.Engineering.shift("") ``
-iteration
+printEmployees
 
 echo "Popped the last value off: "`` people.Engineering.pop() ``
-iteration
+printEmployees
 
-echo
 echo "Indexing an array, doing variable assignments"
 
 person0=``people.HR[0]``

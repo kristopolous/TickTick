@@ -5,6 +5,7 @@ TickTick enables you to put JSON in your bash scripts.  Yes, just encapsulate th
 ## Runtime
 A few array manipulation runtime directives are supported:
 
+ * length
  * push 
  * pop
  * shift
@@ -42,25 +43,32 @@ bob=Bob
     }
   }
 ``
-`` people.Engineering = [ "Darren", "Edith", "Frank" ] ``
-`` people.Engineering.push("Isaac") ``
 
-function iteration() {
+function printEmployees() {
+  echo
+  echo "  The ``people.Engineering.length()``" "Employees listed are:"
+
   for employee in ``people.Engineering.items()``; do
-    printf "\t%s\n" ${!employee}
+    printf "    - %s\n" ${!employee}
   done
+
+  echo 
 }
 
-echo "Iteration"
-iteration
+echo "Base Assignment"
+`` people.Engineering = [ "Darren", "Edith", "Frank" ] ``
+printEmployees
 
-echo "Shifted the first element off: "`` people.Engineering.shift() ``
-iteration
+echo "Pushed a new element, Isaac onto the array"
+`` people.Engineering.push("Isaac") ``
+printEmployees
+
+echo "Shifted the first element off: "`` people.Engineering.shift("") ``
+printEmployees
 
 echo "Popped the last value off: "`` people.Engineering.pop() ``
-iteration
+printEmployees
 
-echo
 echo "Indexing an array, doing variable assignments"
 
 person0=``people.HR[0]``

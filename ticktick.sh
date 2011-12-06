@@ -151,9 +151,8 @@ __tick_fun_parse_expression () {
       suffix="$suffix$token"
     else
       case "$token" in
-        push|pop|shift|unshift|items|length) function=$token ;;
+        push|pop|shift|items|length) function=$token ;;
         '(') let paren=$paren+1 ;;
-
         ')') 
           let paren=$paren-1
           if (( paren == 0 )); then
@@ -163,7 +162,7 @@ __tick_fun_parse_expression () {
               items) echo '${!__tick_data_'"$prefix"'*}' ;;
               pop) echo '$( __tick_runtime_last ${!__tick_data_'"$prefix"'*} ); __tick_runtime__pop ${!__tick_data_'"$prefix"'*}' ;;
               shift) echo '`__tick_runtime_first ${!__tick_data_'"$prefix"'*}`; __tick_runtime__shift ${!__tick_data_'"$prefix"'*}' ;;
-              # length) echo "\$( __tick_runtime_$function \"$arguments\" __tick_data_$prefix "'${!__tick_data_'"$prefix"'*} )' ;;
+              length) echo '`__tick_runtime_length ${!__tick_data_'"$prefix"'*}`' ;;
               *) echo "__tick_runtime_$function \"$arguments\" __tick_data_$prefix "'${!__tick_data_'"$prefix"'*}'
             esac
 
@@ -191,7 +190,7 @@ __tick_fun_parse_expression () {
 
 __tick_fun_tokenize_expression () {
   local CHAR='[A-Za-z_\\]'
-  local FUNCTION="(push|pop|unshift|shift|items|length)"
+  local FUNCTION="(push|pop|shift|items|length)"
   local NUMBER='[0-9]*'
   local STRING="$CHAR*($CHAR*)*"
   local PAREN="[()]"
@@ -251,18 +250,10 @@ __tick_fun_tokenize()  {
   exit
 }
 
-__tick_runtime_length() {
-  return $(( $# - 2 ));
-}
-__tick_runtime_unshift() {
-  echo "unshift - TODO"
-}
-__tick_runtime_first() {
-  echo ${!1}
-}
-__tick_runtime_last() {
-  eval 'echo $'"${!#}"
-}
+__tick_runtime_length() { echo $#; }
+__tick_runtime_first() { echo ${!1}; }
+__tick_runtime_last() { eval 'echo $'"${!#}"; }
+
 __tick_runtime__shift() {
   local left=
   local right=
@@ -276,7 +267,6 @@ __tick_runtime__shift() {
   done
   eval "unset $left"
 }
-
 __tick_runtime__pop() {
   local lastarg="${!#}"
   eval "unset $lastarg"
