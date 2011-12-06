@@ -2,11 +2,6 @@
 
 # This is from https://github.com/dominictarr/JSON.sh
 # See LICENSE for more info. {{{
-__tick_json_throw () {
-  echo "$*" >&2
-  exit 1
-}
-
 __tick_json_tokenize () {
   local ESCAPE='(\\[^u[:cntrl:]]|\\u[0-9a-fA-F]{4})'
   local CHAR='[^[:cntrl:]"\\]'
@@ -36,7 +31,7 @@ __tick_json_parse_array () {
         # below.
         __tick_json_parse_value "$1" "`printf "%012d" $index`"
 
-        let index=$index+1
+        (( index++ ))
         ary="$ary$value" 
 
         read -r token
@@ -44,13 +39,11 @@ __tick_json_parse_array () {
         case "$token" in
           ']') break ;;
           ',') ary="${ary}_" ;;
-          *) __tick_json_throw "EXPECTED , or ] GOT ${token:-EOF}" ;;
         esac
         read -r token
       done
       ;;
   esac
-  value=`printf '[%s]' $ary`
 }
 
 __tick_json_parse_object () {
@@ -65,15 +58,10 @@ __tick_json_parse_object () {
       do
         case "$token" in
           '"'*'"'|\$[A-Za-z0-9_]*) key=$token ;;
-          *) __tick_json_throw "EXPECTED string GOT ${token:-EOF}" ;;
         esac
 
+        # Should be colon, let's trust everybody here
         read -r token
-
-        case "$token" in
-          ':') ;;
-          *) __tick_json_throw "EXPECTED : GOT ${token:-EOF}" ;;
-        esac
 
         read -r token
         __tick_json_parse_value "$1" "$key"
@@ -84,14 +72,12 @@ __tick_json_parse_object () {
         case "$token" in
           '}') break ;;
           ',') obj="${obj}_" ;;
-          *) __tick_json_throw "EXPECTED , or } GOT ${token:-EOF}" ;;
         esac
 
         read -r token
       done
     ;;
   esac
-  value=`printf '{%s}_' "$obj"`
 }
 
 __tick_json_parse_value () {
@@ -108,9 +94,6 @@ __tick_json_parse_value () {
     '{') __tick_json_parse_object "$jpath" ;;
     '[') __tick_json_parse_array  "$jpath" ;;
 
-    # At this point, the only valid single-character tokens are digits.
-    ''|[^0-9]) __tick_json_throw "EXPECTED value GOT ${token:-EOF}" ;;
-
     *) 
       value=$token 
 
@@ -123,11 +106,6 @@ __tick_json_parse () {
   read -r token
   __tick_json_parse_value
   read -r token
-
-  case "$token" in
-    '') ;;
-    *) __tick_json_throw "EXPECTED EOF GOT $token" ;;
-  esac
 }
 # }}} End of code from github
 
@@ -158,7 +136,7 @@ __tick_fun_parse_expression () {
     else
       case "$token" in
         push|pop|shift|items|length) function=$token ;;
-        '(') let paren=$paren+1 ;;
+        '(') (( paren++ )) ;;
         ')') 
           if (( --paren == 0 )); then
             # There's some tricks here since bash functions don't actually return strings, just integers
@@ -198,7 +176,7 @@ __tick_fun_parse() {
 
   while read -r token; do
     case "$token" in
-      '``') let open=$open+1 ;;
+      '``') (( open++ )) ;;
       __tick_fun_append) echoopts=-n ;;
       *) 
         if (( open % 2 == 1 )); then 
