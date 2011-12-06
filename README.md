@@ -5,8 +5,10 @@ TickTick enables you to put JSON in your bash scripts.  Yes, just encapsulate th
 ## Runtime
 A few array manipulation runtime directives are supported:
 
- * push (implemented)
- * pop (partially implemented)
+ * push 
+ * pop
+ * shift
+ * items
 
 Along with assignment operations, and Javscript like indexing into objects and arrays.
 
@@ -28,6 +30,12 @@ bashvar=`` Var.Data.pop() ``
 # Variable Assignment
 bob=Bob
 
+function iteration() {
+  for employee in ``people.Engineering.items()``; do
+    printf "\t%s\n" ${!employee}
+  done
+}
+
 ``
   people = {
     "HR" : [
@@ -41,21 +49,23 @@ bob=Bob
     }
   }
 ``
-
 `` people.Engineering = [ "Darren", "Edith", "Frank" ] ``
 `` people.Engineering.push("Isaac") ``
 
+
+
 echo "Iteration"
+iteration
 
-for employee in ``people.Engineering``; do
-  echo "  - ${!employee}"
-done
+echo "Shifted the first element off: "`` people.Engineering.shift("") ``
+iteration
 
-value=`` people.Engineering.pop() ``
-echo $value
+echo "Popped the last value off: "`` people.Engineering.pop() ``
+iteration
 
+echo
 echo "Indexing an array, doing variable assignments"
 
-person=``people.HR[0]``
-echo $person ``people.HR[1]``
+person0=``people.HR[0]``
+echo $person0 ``people.HR[1]``
 </pre>

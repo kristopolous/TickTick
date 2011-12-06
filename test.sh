@@ -5,6 +5,12 @@
 # Variable Assignment
 bob=Bob
 
+function iteration() {
+  for employee in ``people.Engineering.items()``; do
+    printf "\t%s\n" ${!employee}
+  done
+}
+
 ``
   people = {
     "HR" : [
@@ -18,18 +24,19 @@ bob=Bob
     }
   }
 ``
-
 `` people.Engineering = [ "Darren", "Edith", "Frank" ] ``
 `` people.Engineering.push("Isaac") ``
 
+
+
 echo "Iteration"
+iteration
 
-for employee in ``people.Engineering``; do
-  printf "\t%s\n" ${!employee}
-done
+echo "Shifted the first element off: "`` people.Engineering.shift("") ``
+iteration
 
-value=`` people.Engineering.pop() ``
-echo $value
+echo "Popped the last value off: "`` people.Engineering.pop() ``
+iteration
 
 echo
 echo "Indexing an array, doing variable assignments"

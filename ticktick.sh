@@ -96,7 +96,6 @@ __tick_json_parse_object () {
 }
 
 __tick_json_parse_value () {
-  local collection=1
   local jpath="${1:+$1,}$2"
   local prej="${jpath//,/_}"
   prej=${prej//\"/}
@@ -119,18 +118,9 @@ __tick_json_parse_value () {
     *) 
       value=$token 
 
-      collection=''
-
-      if [ -z $__tick_var_collection ]; then
-        printf "%s%s=%s\n" "__tick_data_$__tick_var_prefix" "$prej" "$value" 
-      fi
+      printf "%s%s=%s\n" "__tick_data_$__tick_var_prefix" "$prej" "$value" 
       ;;
   esac
-
-  # Keep track of things that are a collection
-  if [ $collection ] && [ $__tick_var_collection ] ; then 
-    echo -n "__tick_collection_$__tick_var_prefix$prej=1;"
-  fi
 }
 
 __tick_json_parse () {
@@ -160,23 +150,23 @@ __tick_fun_parse_expression () {
       suffix="$suffix$token"
     else
       case "$token" in
-        push|pop|shift|unshift|length) function=$token ;;
+        push|pop|shift|unshift|items|length) function=$token ;;
         '(') let paren=$paren+1 ;;
 
         ')') 
           let paren=$paren-1
           if (( paren == 0 )); then
-            if [ -z $__tick_var_collection ]; then
-              # There's some tricks here since bash functions don't actually return strings, just integers
-              # A pop is a subshell execution followed by an unassignment for instance.
-              case $function in
-                pop) echo '$( __tick_runtime_last ${!__tick_data_'"$prefix"'*} ); __tick_runtime__pop ${!__tick_data_'"$prefix"'*}' ;;
-                # length) echo "\$( __tick_runtime_$function \"$arguments\" __tick_data_$prefix "'${!__tick_data_'"$prefix"'*} )' ;;
-                *) echo "__tick_runtime_$function \"$arguments\" __tick_data_$prefix "'${!__tick_data_'"$prefix"'*}'
-              esac
+            # There's some tricks here since bash functions don't actually return strings, just integers
+            # A pop is a subshell execution followed by an unassignment for instance.
+            case $function in
+              items) echo '${!__tick_data_'"$prefix"'*}' ;;
+              pop) echo '$( __tick_runtime_last ${!__tick_data_'"$prefix"'*} ); __tick_runtime__pop ${!__tick_data_'"$prefix"'*}' ;;
+              shift) echo '`__tick_runtime_first ${!__tick_data_'"$prefix"'*}`; __tick_runtime__shift ${!__tick_data_'"$prefix"'*}' ;;
+              # length) echo "\$( __tick_runtime_$function \"$arguments\" __tick_data_$prefix "'${!__tick_data_'"$prefix"'*} )' ;;
+              *) echo "__tick_runtime_$function \"$arguments\" __tick_data_$prefix "'${!__tick_data_'"$prefix"'*}'
+            esac
 
-              return
-            fi
+            return
           fi
           ;;
 
@@ -199,18 +189,14 @@ __tick_fun_parse_expression () {
   if [ $suffix ]; then
     __tick_var_prefix="$prefix"
     echo "$suffix" | __tick_json_tokenize | __tick_json_parse
-  elif [ -z $__tick_var_collection ]; then
-    if (( $(( __tick_collection_$prefix )) )); then
-      echo '${!'__tick_data_$prefix'_*}'
-    else
-      echo '${'__tick_data_$prefix'}'
-    fi
+  else
+    echo '${'__tick_data_$prefix'}'
   fi
 }
 
 __tick_fun_tokenize_expression () {
   local CHAR='[A-Za-z_\\]'
-  local FUNCTION="(push|pop|unshift|shift|length)"
+  local FUNCTION="(push|pop|unshift|shift|items|length)"
   local NUMBER='[0-9]*'
   local STRING="$CHAR*($CHAR*)*"
   local PAREN="[()]"
@@ -230,9 +216,6 @@ __tick_fun_parse() {
       *) 
         if (( open % 2 == 1 )); then 
           if [ "$token" ]; then
-            __tick_var_collection=1
-            eval `echo "$token" | __tick_fun_tokenize_expression | __tick_fun_parse_expression`
-            __tick_var_collection=''
             out=`echo $token | __tick_fun_tokenize_expression | __tick_fun_parse_expression`
             echo $echoopts "$out"
           fi
@@ -285,9 +268,26 @@ __tick_runtime_unshift() {
 __tick_runtime_shift() {
   echo "shift - TODO"
 }
+__tick_runtime_first() {
+  echo ${!1}
+}
 __tick_runtime_last() {
   eval 'echo $'"${!#}"
 }
+__tick_runtime__shift() {
+  local left=
+  local right=
+
+  for (( i = 1; i <= $# + 1; i++ )) ; do
+    if [ "$left" ]; then
+      eval "$left=\$$right"
+    fi
+    left=$right
+    right=${!i}
+  done
+  eval "unset $left"
+}
+
 __tick_runtime__pop() {
   local lastarg="${!#}"
   eval "unset $lastarg"
