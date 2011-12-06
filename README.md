@@ -13,7 +13,7 @@ A few array manipulation runtime directives are supported:
 
 Along with assignment operations<sup>1</sup>, and Javascript like indexing into objects and arrays.
 
-Additionally, bash variables "$name" are preserved in the ticktick blocks.  For instance, once could do
+Additionally, bash variables (a.k.a, "$name") are preserved in the ticktick blocks.  For instance, once could do
 
 <pre>
 `` Var.Data = [] ``
