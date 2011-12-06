@@ -170,7 +170,6 @@ __tick_fun_parse_expression () {
           fi
           ;;
 
-        '$') prefix="$prefix"DOLLARSIGN ;;
         [0-9]*) prefix="$prefix"`printf "%012d" $token` ;;
         '['|.) prefix="$prefix"_ ;;
         '"'|"'"|']') ;;
@@ -253,6 +252,7 @@ __tick_fun_tokenize()  {
 __tick_runtime_length() { echo $#; }
 __tick_runtime_first() { echo ${!1}; }
 __tick_runtime_last() { eval 'echo $'"${!#}"; }
+__tick_runtime__pop() { eval "unset ${!#}"; }
 
 __tick_runtime__shift() {
   local left=
@@ -266,10 +266,6 @@ __tick_runtime__shift() {
     right=${!i}
   done
   eval "unset $left"
-}
-__tick_runtime__pop() {
-  local lastarg="${!#}"
-  eval "unset $lastarg"
 }
 __tick_runtime_push() {
   local value=$1

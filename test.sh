@@ -33,8 +33,9 @@ echo "Base Assignment"
 `` people.Engineering = [ "Darren", "Edith", "Frank" ] ``
 printEmployees
 
-echo "Pushed a new element, Isaac onto the array"
-`` people.Engineering.push("Isaac") ``
+newPerson=Isaac
+echo "Pushed a new element by variable, $newPerson onto the array"
+`` people.Engineering.push($newPerson) ``
 printEmployees
 
 echo "Shifted the first element off: "`` people.Engineering.shift("") ``
