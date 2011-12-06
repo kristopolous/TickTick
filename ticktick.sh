@@ -1,7 +1,6 @@
 #!/bin/bash
 
-
-# This is from https://github.com/dominictarr/JSON.sh, 
+# This is from https://github.com/dominictarr/JSON.sh
 # See LICENSE for more info. {{{
 __tick_json_throw () {
   echo "$*" >&2
@@ -38,7 +37,7 @@ __tick_json_parse_array () {
         __tick_json_parse_value "$1" "`printf "%012d" $index`"
 
         let index=$index+1
-        ary="$ary""$value" 
+        ary="$ary$value" 
 
         read -r token
 
@@ -135,7 +134,7 @@ __tick_json_parse () {
     *) __tick_json_throw "EXPECTED EOF GOT $token" ;;
   esac
 }
-# }} End of code from github
+# }}} End of code from github
 
 __tick_fun_parse_expression () {
   local done=
