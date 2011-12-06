@@ -66,7 +66,7 @@ echo "Pushed a new element by variable, $newPerson onto the array"
 `` people.Engineering.push($newPerson) ``
 printEmployees
 
-echo "Shifted the first element off: "`` people.Engineering.shift("") ``
+echo "Shifted the first element off: "`` people.Engineering.shift() ``
 printEmployees
 
 echo "Popped the last value off: "`` people.Engineering.pop() ``
