@@ -54,7 +54,7 @@ function iteration() {
 echo "Iteration"
 iteration
 
-echo "Shifted the first element off: "`` people.Engineering.shift("") ``
+echo "Shifted the first element off: "`` people.Engineering.shift() ``
 iteration
 
 echo "Popped the last value off: "`` people.Engineering.pop() ``
