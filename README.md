@@ -15,13 +15,13 @@ Along with assignment operations<sup>1</sup>, and Javscript like indexing into o
 
 Additionally, bash variables "$[name]" are preserved in the ticktick blocks.  For instance, once could do
 
-<sup>1</sup>Although Javascript supports $ prefixed variables, this does not.
-
 <pre>
 `` Var.Data = [] ``
 `` Var.Data.push($key) ``
 bashvar=`` Var.Data.pop() ``
 </pre>
+
+<sup>1</sup>Although Javascript supports $ prefixed variables, this does not.
 
 # Example
 
