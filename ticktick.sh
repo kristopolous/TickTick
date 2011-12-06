@@ -167,7 +167,14 @@ __tick_fun_parse_expression () {
           let paren=$paren-1
           if (( paren == 0 )); then
             if [ -z $__tick_var_collection ]; then
-              echo "__tick_runtime_$function \"$arguments\" __tick_data_$prefix "'${!__tick_data_'"$prefix"'*}'
+              # There's some tricks here since bash functions don't actually return strings, just integers
+              # A pop is a subshell execution followed by an unassignment for instance.
+              case $function in
+                pop) echo '$( __tick_runtime_last ${!__tick_data_'"$prefix"'*} ); __tick_runtime__pop ${!__tick_data_'"$prefix"'*}' ;;
+                # length) echo "\$( __tick_runtime_$function \"$arguments\" __tick_data_$prefix "'${!__tick_data_'"$prefix"'*} )' ;;
+                *) echo "__tick_runtime_$function \"$arguments\" __tick_data_$prefix "'${!__tick_data_'"$prefix"'*}'
+              esac
+
               return
             fi
           fi
@@ -270,7 +277,7 @@ __tick_fun_tokenize()  {
 }
 
 __tick_runtime_length() {
-  echo "length - TODO"
+  return $(( $# - 2 ));
 }
 __tick_runtime_unshift() {
   echo "unshift - TODO"
@@ -278,8 +285,12 @@ __tick_runtime_unshift() {
 __tick_runtime_shift() {
   echo "shift - TODO"
 }
-__tick_runtime_pop() {
-  echo "pop - TODO"
+__tick_runtime_last() {
+  eval 'echo $'"${!#}"
+}
+__tick_runtime__pop() {
+  local lastarg="${!#}"
+  eval "unset $lastarg"
 }
 __tick_runtime_push() {
   local value=$1

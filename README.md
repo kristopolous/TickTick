@@ -9,11 +9,13 @@ A few array manipulation runtime directives are supported:
  * pop
  * shift
  * unshift
- * length
+ * length<sup>1</sup>
 
 Along with assignment operations, and Javscript like indexing into objects and arrays.
 
 Additionally, bash variables "$[name]" are preserved in the ticktick blocks.  For instance, once could do
+
+<sup>1</sup>length is a function for now
 
 <pre>
 `` Var.Data = [] ``

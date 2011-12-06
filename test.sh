@@ -28,6 +28,9 @@ for employee in ``people.Engineering``; do
   printf "\t%s\n" ${!employee}
 done
 
+value=`` people.Engineering.pop() ``
+echo $value
+
 echo
 echo "Indexing an array, doing variable assignments"
 
