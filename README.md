@@ -11,7 +11,7 @@ A few array manipulation runtime directives are supported:
  * shift
  * items
 
-Along with assignment operations<sup>1</sup>, and Javscript like indexing into objects and arrays.
+Along with assignment operations<sup>1</sup>, and Javascript like indexing into objects and arrays.
 
 Additionally, bash variables "$[name]" are preserved in the ticktick blocks.  For instance, once could do
 
