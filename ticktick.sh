@@ -98,7 +98,9 @@ __tick_json_parse_object () {
 __tick_json_parse_value () {
   local jpath="${1:+$1,}$2"
   local prej="${jpath//,/_}"
+
   prej=${prej//\"/}
+
   if [ "$prej" ]; then
     prej="_$prej"
   fi
@@ -136,12 +138,12 @@ __tick_json_parse () {
 # }} End of code from github
 
 __tick_fun_parse_expression () {
-  local done=""
-  local prefix=""
-  local suffix=""
+  local done=
+  local prefix=
+  local suffix=
 
-  local function=""
-  local arguments=""
+  local function=
+  local arguments=
 
   local paren=0
 
