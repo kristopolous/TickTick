@@ -176,13 +176,7 @@ __tick_fun_parse_expression () {
         '['|.) prefix="$prefix"_ ;;
         '"'|"'"|']') ;;
         =) done=1 ;;
-        *) 
-          if (( paren > 0 )); then
-            arguments="$arguments$token"
-          else
-            prefix="$prefix$token" 
-          fi
-          ;;
+        *) [ $paren -gt 0 ] && arguments="$arguments$token" || prefix="$prefix$token" ;;
       esac
     fi
   done
@@ -212,14 +206,11 @@ __tick_fun_parse() {
 
   while read -r token; do
     case "$token" in
-      '``') (( open++ )) ;;
+      '``') let open=$open+1 ;;
       __tick_fun_append) echoopts='-n' ;;
       *) 
         if (( open % 2 == 1 )); then 
-          if [ "$token" ]; then
-            out=`echo $token | __tick_fun_tokenize_expression | __tick_fun_parse_expression`
-            echo $echoopts "$out"
-          fi
+          [ "$token" ] && echo $echoopts "`echo $token | __tick_fun_tokenize_expression | __tick_fun_parse_expression`"
         else
           echo $echoopts "${token/%EOL/}"
         fi
@@ -265,9 +256,6 @@ __tick_runtime_length() {
 }
 __tick_runtime_unshift() {
   echo "unshift - TODO"
-}
-__tick_runtime_shift() {
-  echo "shift - TODO"
 }
 __tick_runtime_first() {
   echo ${!1}
