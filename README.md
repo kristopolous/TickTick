@@ -25,11 +25,14 @@ bashvar=`` Var.Data.pop() ``
 
 . ticktick.sh
 
+# Variable Assignment
+bob=Bob
+
 ``
   people = {
     "HR" : [
       "Alice",
-      "Bob",
+      $bob,
       "Carol"
     ],
     "Sales": {
@@ -40,6 +43,7 @@ bashvar=`` Var.Data.pop() ``
 ``
 
 `` people.Engineering = [ "Darren", "Edith", "Frank" ] ``
+`` people.Engineering.push("Isaac") ``
 
 echo "Iteration"
 
@@ -47,7 +51,9 @@ for employee in ``people.Engineering``; do
   echo "  - ${!employee}"
 done
 
-echo
+value=`` people.Engineering.pop() ``
+echo $value
+
 echo "Indexing an array, doing variable assignments"
 
 person=``people.HR[0]``
