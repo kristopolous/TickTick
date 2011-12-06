@@ -105,13 +105,8 @@ __tick_json_parse_value () {
   fi
 
   case "$token" in
-    '{') 
-      __tick_json_parse_object "$jpath" 
-      ;;
-
-    '[') 
-      __tick_json_parse_array  "$jpath" 
-      ;;
+    '{') __tick_json_parse_object "$jpath" ;;
+    '[') __tick_json_parse_array  "$jpath" ;;
 
     # At this point, the only valid single-character tokens are digits.
     ''|[^0-9]) __tick_json_throw "EXPECTED value GOT ${token:-EOF}" ;;
@@ -165,8 +160,7 @@ __tick_fun_parse_expression () {
         push|pop|shift|items|length) function=$token ;;
         '(') let paren=$paren+1 ;;
         ')') 
-          let paren=$paren-1
-          if (( paren == 0 )); then
+          if (( --paren == 0 )); then
             # There's some tricks here since bash functions don't actually return strings, just integers
             # A pop is a subshell execution followed by an unassignment for instance.
             case $function in
@@ -194,7 +188,7 @@ __tick_fun_parse_expression () {
     __tick_var_prefix="$prefix"
     echo "$suffix" | __tick_json_tokenize | __tick_json_parse
   else
-    echo '${'__tick_data_$prefix'}'
+    echo '${__tick_data_'$prefix'}'
   fi
 }
 
@@ -205,7 +199,7 @@ __tick_fun_parse() {
   while read -r token; do
     case "$token" in
       '``') let open=$open+1 ;;
-      __tick_fun_append) echoopts='-n' ;;
+      __tick_fun_append) echoopts=-n ;;
       *) 
         if (( open % 2 == 1 )); then 
           [ "$token" ] && echo $echoopts "`echo $token | __tick_fun_tokenize_expression | __tick_fun_parse_expression`"
@@ -252,8 +246,8 @@ __tick_fun_tokenize()  {
 
 __tick_runtime_length() { echo $#; }
 __tick_runtime_first() { echo ${!1}; }
-__tick_runtime_last() { eval 'echo $'"${!#}"; }
-__tick_runtime__pop() { eval "unset ${!#}"; }
+__tick_runtime_last() { eval 'echo $'${!#}; }
+__tick_runtime__pop() { eval unset ${!#}; }
 
 __tick_runtime__shift() {
   local left=
@@ -266,17 +260,17 @@ __tick_runtime__shift() {
     left=$right
     right=${!i}
   done
-  eval "unset $left"
+  eval unset $left
 }
 __tick_runtime_push() {
   local value=$1
   local base=$2
-  local lastarg="${!#}"
+  local lastarg=${!#}
 
   let nextval=${lastarg/$base/}+1
   nextval=`printf "%012d" $nextval`
 
-  eval "$base$nextval=$value"
+  eval $base$nextval=$value
 }
 
 [ $__tick_var_tokenized ] || __tick_fun_tokenize
