@@ -48,7 +48,7 @@ bob=Bob
 
 function printEmployees() {
   echo
-  echo "  The ``people.Engineering.length()``" "Employees listed are:"
+  echo "  The ``people.Engineering.length()`` Employees listed are:"
 
   for employee in ``people.Engineering.items()``; do
     printf "    - %s\n" ${!employee}

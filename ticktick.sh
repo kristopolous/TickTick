@@ -136,6 +136,17 @@ __tick_json_parse () {
 }
 # }}} End of code from github
 
+__tick_fun_tokenize_expression () {
+  local CHAR='[A-Za-z_$\\]'
+  local FUNCTION="(push|pop|shift|items|length)"
+  local NUMBER='[0-9]*'
+  local STRING="$CHAR*($CHAR*)*"
+  local PAREN="[()]"
+  local QUOTE="[\"\']"
+  local SPACE='[[:space:]]+'
+  egrep -ao "$FUNCTION|$STRING|$QUOTE|$PAREN|$NUMBER|$SPACE|." --color=never 
+}
+
 __tick_fun_parse_expression () {
   local done=
   local prefix=
@@ -187,17 +198,6 @@ __tick_fun_parse_expression () {
   fi
 }
 
-__tick_fun_tokenize_expression () {
-  local CHAR='[A-Za-z_\\]'
-  local FUNCTION="(push|pop|shift|items|length)"
-  local NUMBER='[0-9]*'
-  local STRING="$CHAR*($CHAR*)*"
-  local PAREN="[()]"
-  local QUOTE="[\"\']"
-  local SPACE='[[:space:]]+'
-  egrep -ao "$FUNCTION|$STRING|$QUOTE|$PAREN|$NUMBER|$SPACE|." --color=never 
-}
-
 __tick_fun_parse() {
   local open=0
   local echoopts=''
@@ -210,6 +210,7 @@ __tick_fun_parse() {
         if (( open % 2 == 1 )); then 
           [ "$token" ] && echo $echoopts "`echo $token | __tick_fun_tokenize_expression | __tick_fun_parse_expression`"
         else
+          token=${token/#SOL/}
           echo $echoopts "${token/%EOL/}"
         fi
         unset echoopts 
@@ -237,7 +238,7 @@ __tick_fun_tokenize()  {
         if ( (i + 1) % 2 == 1 && length($(i + 1)))\
           print "__tick_fun_append";\
         if ( i % 2 == 1 && length($i))\
-          printf "%s\n%sEOL", FS, $i;\
+          printf "%s\nSOL%sEOL", FS, $i;\
         else\
           printf "%s\n%s", FS, $i;\
       }\
