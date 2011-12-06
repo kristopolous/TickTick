@@ -15,9 +15,11 @@ Along with assignment operations, and Javscript like indexing into objects and a
 
 Additionally, bash variables "$[name]" are preserved in the ticktick blocks.  For instance, once could do
 
+<pre>
 `` Var.Data = [] ``
 `` Var.Data.push($key) ``
 bashvar=`` Var.Data.pop() ``
+</pre>
 
 # Example
 
