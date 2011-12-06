@@ -57,22 +57,22 @@ function printEmployees() {
   echo 
 }
 
-echo "Base Assignment"
+echo Base Assignment
 `` people.Engineering = [ "Darren", "Edith", "Frank" ] ``
 printEmployees
 
 newPerson=Isaac
-echo "Pushed a new element by variable, $newPerson onto the array"
+echo Pushed a new element by variable, $newPerson onto the array
 `` people.Engineering.push($newPerson) ``
 printEmployees
 
-echo "Shifted the first element off: "`` people.Engineering.shift() ``
+echo Shifted the first element off: `` people.Engineering.shift() ``
 printEmployees
 
-echo "Popped the last value off: "`` people.Engineering.pop() ``
+echo Popped the last value off: `` people.Engineering.pop() ``
 printEmployees
 
-echo "Indexing an array, doing variable assignments"
+echo Indexing an array, doing variable assignments
 
 person0=``people.HR[0]``
 echo $person0 ``people.HR[1]``
