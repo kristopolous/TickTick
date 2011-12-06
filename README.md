@@ -27,14 +27,7 @@ bashvar=`` Var.Data.pop() ``
 
 . ticktick.sh
 
-# Variable Assignment
 bob=Bob
-
-function iteration() {
-  for employee in ``people.Engineering.items()``; do
-    printf "\t%s\n" ${!employee}
-  done
-}
 
 ``
   people = {
@@ -52,7 +45,11 @@ function iteration() {
 `` people.Engineering = [ "Darren", "Edith", "Frank" ] ``
 `` people.Engineering.push("Isaac") ``
 
-
+function iteration() {
+  for employee in ``people.Engineering.items()``; do
+    printf "\t%s\n" ${!employee}
+  done
+}
 
 echo "Iteration"
 iteration
