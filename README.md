@@ -1,6 +1,8 @@
 # Introduction
 
-TickTick enables you to put JSON in your bash scripts.  Yes, just encapsulate them with two back-ticks.
+TickTick enables you to put JSON in bash scripts.  Yes, just encapsulate them with two back-ticks.
+
+**Note: This is just a fun hack.** You may want to consider using mature languages like Ruby or Perl to solve actual real life problems.  Oh who am I kidding, I use whitespace and brainfuck every day.
 
 # Example
 
