@@ -103,13 +103,17 @@ __tick_fun_tokenize_expression() {
   PAREN="[()]"
   QUOTE="[\"\']"
   SPACE='[[:space:]]+'
-  egrep -ao "$FUNCTION|$STRING|$QUOTE|$PAREN|$NUMBER|$SPACE|." --color=never 
+  egrep -ao "$FUNCTION|$STRING|$QUOTE|$PAREN|$NUMBER|$SPACE|." --color=never |\
+    sed "s/^/S/g;s/$/E/g" # Make sure spaces are respected
 }
 
 __tick_fun_parse_expression() {
   local paren=0
 
   while read -r token; do
+    token=${token/#S/}
+    token=${token/%E/}
+
     if [ $done ]; then
       suffix+="$token"
     else
@@ -132,12 +136,14 @@ __tick_fun_parse_expression() {
         '['|.) Prefix+=_ ;;
         '"'|"'"|']') ;;
         =) done=1 ;;
+        # Only respect a space if its in the args.
+        ' ') [ $paren -gt 0 ] && arguments+="$token" ;;
         *) [ $paren -gt 0 ] && arguments+="$token" || Prefix+="$token" ;;
       esac
     fi
   done
 
-  if [ $suffix ]; then
+  if [ "$suffix" ]; then
     echo "$suffix" | __tick_json_tokenize | __tick_json_parse
   else
     echo '${__tick_data_'$Prefix'}'
@@ -150,6 +156,7 @@ __tick_fun_parse() {
   while read -r token; do
     token=${token/#S/}
     token=${token/%E/}
+
     case "$token" in
       '``') (( open++ )) ;;
       __tick_fun_append) echoopts=-n ;;

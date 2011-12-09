@@ -23,14 +23,14 @@ function printEmployees() {
   echo "  The ``people.Engineering.length()`` Employees listed are:"
 
   for employee in ``people.Engineering.items()``; do
-    printf "    - %s\n" ${!employee}
+    printf "    - %s\n" "${!employee}"
   done
 
   echo 
 }
 
 echo Base Assignment
-`` people.Engineering = [ "Darren", "Edith", "Frank" ] ``
+`` people.Engineering = [ "Darren D", "Edith E", "Frank F" ] ``
 printEmployees
 
 newPerson=Isaac
