@@ -123,7 +123,7 @@ __tick_fun_parse_expression() {
         ')') 
           case $function in
             items) echo '${!__tick_data_'"$Prefix"'*}' ;;
-            pop) echo '$( __tick_runtime_last ${!__tick_data_'"$Prefix"'*} ); __tick_runtime_pop ${!__tick_data_'"$Prefix"'*}' ;;
+            pop) echo '"$( __tick_runtime_last ${!__tick_data_'"$Prefix"'*} )"; __tick_runtime_pop ${!__tick_data_'"$Prefix"'*}' ;;
             shift) echo '`__tick_runtime_first ${!__tick_data_'"$Prefix"'*}`; __tick_runtime_shift ${!__tick_data_'"$Prefix"'*}' ;;
             length) echo '`__tick_runtime_length ${!__tick_data_'"$Prefix"'*}`' ;;
             *) echo "__tick_runtime_$function \"$arguments\" __tick_data_$Prefix "'${!__tick_data_'"$Prefix"'*}'
