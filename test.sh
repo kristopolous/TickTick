@@ -33,7 +33,7 @@ echo Base Assignment
 `` people.Engineering = [ "Darren D", "Edith E", "Frank F" ] ``
 printEmployees
 
-newPerson=Isaac
+newPerson="Isaac I"
 echo Pushed a new element by variable, $newPerson onto the array
 `` people.Engineering.push($newPerson) ``
 printEmployees

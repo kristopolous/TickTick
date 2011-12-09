@@ -215,14 +215,14 @@ __tick_runtime_shift() {
   eval unset $left
 }
 __tick_runtime_push() {
-  local value=$1
+  local value="${1/\"/\\\"}"
   local base=$2
   local lastarg=${!#}
 
   let nextval=${lastarg/$base/}+1
   nextval=`printf "%012d" $nextval`
 
-  eval $base$nextval=$value
+  eval $base$nextval=\"$value\"
 }
 
 [ $__tick_var_tokenized ] || __tick_fun_tokenize
