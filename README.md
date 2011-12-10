@@ -79,3 +79,11 @@ bashvar=`` Var.Data.pop() ``
 
 <sup>1</sup>Although Javascript supports $ prefixed variables, this does not.
 
+## LICENSE
+
+This software is available under the following licenses:
+
+  * MIT
+  * Apache 2
+
+Parts of this work are derived from [JSON.sh](https://github.com/dominictarr/JSON.sh), which is also available under the aforementioned licenses.
