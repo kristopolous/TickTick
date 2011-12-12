@@ -67,7 +67,7 @@ A few array manipulation runtime directives are supported:
  
  * `[]` (as new Array) <pre>\`\`arr = ["foo"]\`\`</pre>
  * `[]` (to index)     <pre>echo \`\`arr[0]\`\`</pre>
- * `length`            <pre>arr_len=\`\`arr.length()\`\`; echo ${BASH_VAR}</pre>
+ * `length`            <pre>arr_len=\`\`arr.length()\`\`; echo ${arr_len}</pre>
  * `push`              <pre>\`\`arr.push(${arr_len})\`\`</pre>
  * `pop`               <pre>echo \`\`arr.pop()\`\`</pre>
  * `shift`             <pre>echo \`\`arr.shift()\`\`</pre>
