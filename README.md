@@ -58,14 +58,30 @@ echo Indexing an array, doing variable assignments
 person0=``people.HR[0]``
 echo $person0 ``people.HR[1]``
 </pre>
-## Runtime
-A few array manipulation runtime directives are supported:
+# API
 
- * length
- * push 
- * pop
- * shift
- * items
+Arrays
+---
+
+A few array manipulation runtime directives are supported:
+ 
+ * `[]` (as new Array) <pre>\`\`arr = ["foo"]\`\`</pre>
+ * `[]` (to index)     <pre>echo \`\`arr[0]\`\`</pre>
+ * `length`            <pre>arr_len=\`\`arr.length()\`\`; echo ${arr_len}</pre>
+ * `push`              <pre>\`\`arr.push(${arr_len})\`\`</pre>
+ * `pop`               <pre>echo \`\`arr.pop()\`\`</pre>
+ * `shift`             <pre>echo \`\`arr.shift()\`\`</pre>
+ * `items`             <pre>for x in \`\`arr.items()\`\`; do echo "${x}"; done</pre>
+
+Objects
+---
+
+ * `{}` (as new Object) <pre>\`\`obj = { "foo": "bar", "baz": "qux" }\`\`</pre>
+ * `[]` (to index)      <pre>echo \`\`obj["foo"]\`\`</pre>
+ * `.` (to index)       <pre>echo \`\`obj.baz\`\`</pre>
+
+Bash variables ($) in JSON
+---
 
 Along with assignment operations<sup>1</sup>, and Javascript like indexing into objects and arrays.
 
@@ -79,7 +95,7 @@ bashvar=`` Var.Data.pop() ``
 
 <sup>1</sup>Although Javascript supports $ prefixed variables, this does not.
 
-## LICENSE
+# LICENSE
 
 This software is available under the following licenses:
 
