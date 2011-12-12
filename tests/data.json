@@ -1,0 +1,19 @@
+{
+  "query": {},
+  "pathname": "/echo/request.json",
+  "href": "http://foobar3000.com/echo/request.json",
+  "httpVersion": "1.1",
+  "method": "GET",
+  "headers": {
+    "user-agent": "curl/7.21.6 (i686-pc-linux-gnu) libcurl/7.21.6 OpenSSL/1.0.0e zlib/1.2.3.4 libidn/1.22 librtmp/2.3",
+    "host": "foobar3000.com",
+    "accept": "*/*"
+  },
+  "trailers": {},
+  "remoteAddress": "99.59.97.101",
+  "remotePort": 39099,
+  "protocol": "http:",
+  "host": "foobar3000.com",
+  "hostname": "foobar3000.com",
+  "session": "NjMzMjgxODMxNjAw"
+}

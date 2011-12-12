@@ -76,6 +76,7 @@ __tick_json_parse_value() {
   local prej=${jpath//\"/}
 
   [ "$prej" ] && prej="_$prej"
+  [ "$prej" ] && prej=${prej/-/__hyphen__}
 
   case "$Token" in
     '{') __tick_json_parse_object "$jpath" ;;
@@ -83,7 +84,9 @@ __tick_json_parse_value() {
 
     *) 
       Value=$Token 
-      echo __tick_data_$Prefix$prej=$Value 
+      Path="$Prefix$prej"
+      Path=${Path/#_/}
+      echo __tick_data_$Path=$Value 
       ;;
   esac
 }
@@ -146,6 +149,7 @@ __tick_fun_parse_expression() {
   if [ "$suffix" ]; then
     echo "$suffix" | __tick_json_tokenize | __tick_json_parse
   else
+    Prefix=${Prefix/-/__hyphen__}
     echo '${__tick_data_'$Prefix'}'
   fi
 }
@@ -196,6 +200,7 @@ __tick_fun_tokenize() {
   exit
 }
 
+## Runtime {
 __tick_runtime_length() { echo $#; }
 __tick_runtime_first() { echo ${!1}; }
 __tick_runtime_last() { eval 'echo $'${!#}; }
@@ -215,14 +220,20 @@ __tick_runtime_shift() {
   eval unset $left
 }
 __tick_runtime_push() {
-  local value="${1/\"/\\\"}"
+  local value="${1/\'/\\\'}"
   local base=$2
   local lastarg=${!#}
 
   let nextval=${lastarg/$base/}+1
   nextval=`printf "%012d" $nextval`
 
-  eval $base$nextval=\"$value\"
+  eval $base$nextval=\'$value\'
 }
+
+tickParse() {
+  eval `echo "$1" | __tick_json_tokenize | __tick_json_parse | tr '\n' ';'`
+}
+## } End of Runtime
+
 
 [ $__tick_var_tokenized ] || __tick_fun_tokenize
