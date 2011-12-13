@@ -99,7 +99,7 @@ bashvar=`` Var.Data.pop() ``
 
 ## Mailing List
 
-Join it [http://groups.google.com/group/ticktick-project](over here).
+Join it [over here](http://groups.google.com/group/ticktick-project).
 
 ## LICENSE
 
