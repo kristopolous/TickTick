@@ -4,60 +4,78 @@ TickTick enables you to put JSON in bash scripts.  Yes, just encapsulate them wi
 
 **Note: This is just a fun hack.** You may want to consider using mature languages like Ruby or Perl to solve actual real life problems.  Oh who am I kidding, I use whitespace and brainfuck every day.
 
-# Example
+# Examples
 
-<pre>
-#!/bin/bash
+Inline Parsing
+---
 
-. ticktick.sh
+    #!/bin/bash
 
-bob=Bob
+    . ticktick.sh
 
-``
-  people = {
-    "HR" : [
-      "Alice",
-      $bob,
-      "Carol"
-    ],
-    "Sales": {
-      "Gale": { "profits" : 1000 },
-      "Harry": { "profits" : 500 }
+    bob=Bob
+
+    ``
+      people = {
+        "HR" : [
+          "Alice",
+          $bob,
+          "Carol"
+        ],
+        "Sales": {
+          "Gale": { "profits" : 1000 },
+          "Harry": { "profits" : 500 }
+        }
+      }
+    ``
+
+    function printEmployees() {
+      echo
+      echo "  The ``people.Engineering.length()`` Employees listed are:"
+
+      for employee in ``people.Engineering.items()``; do
+        printf "    - %s\n" ${!employee}
+      done
+
+      echo 
     }
-  }
-``
 
-function printEmployees() {
-  echo
-  echo "  The ``people.Engineering.length()`` Employees listed are:"
+    echo Base Assignment
+    `` people.Engineering = [ "Darren", "Edith", "Frank" ] ``
+    printEmployees
 
-  for employee in ``people.Engineering.items()``; do
-    printf "    - %s\n" ${!employee}
-  done
+    newPerson=Isaac
+    echo Pushed a new element by variable, $newPerson onto the array
+    `` people.Engineering.push($newPerson) ``
+    printEmployees
 
-  echo 
-}
+    echo Shifted the first element off: `` people.Engineering.shift() ``
+    printEmployees
 
-echo Base Assignment
-`` people.Engineering = [ "Darren", "Edith", "Frank" ] ``
-printEmployees
+    echo Popped the last value off: `` people.Engineering.pop() ``
+    printEmployees
 
-newPerson=Isaac
-echo Pushed a new element by variable, $newPerson onto the array
-`` people.Engineering.push($newPerson) ``
-printEmployees
+    echo Indexing an array, doing variable assignments
 
-echo Shifted the first element off: `` people.Engineering.shift() ``
-printEmployees
+    person0=``people.HR[0]``
+    echo $person0 ``people.HR[1]``
 
-echo Popped the last value off: `` people.Engineering.pop() ``
-printEmployees
+Using a File or cURL
+---
 
-echo Indexing an array, doing variable assignments
+    #!/bin/bash
+    . ../ticktick.sh
 
-person0=``people.HR[0]``
-echo $person0 ``people.HR[1]``
-</pre>
+    # File
+    DATA=`cat data.json`
+    # cURL
+    #DATA=`curl http://foobar3000.com/echo/request.json`
+
+    tickParse "$DATA"
+
+    echo ``pathname``
+    echo ``headers["user-agent"]``
+
 ## Runtime
 A few array manipulation runtime directives are supported:
 
