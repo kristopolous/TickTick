@@ -97,6 +97,10 @@ bashvar=`` Var.Data.pop() ``
 
 <sup>1</sup>Although Javascript supports $ prefixed variables, this does not.
 
+## Mailing List
+
+Join it [http://groups.google.com/group/ticktick-project](over here).
+
 ## LICENSE
 
 This software is available under the following licenses:
