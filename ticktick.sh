@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+ARGV=$@
 # This is from https://github.com/dominictarr/JSON.sh
 # See LICENSE for more info. {{{
 __tick_json_tokenize() {
@@ -179,7 +179,7 @@ __tick_fun_parse() {
 __tick_fun_tokenize() {
   export __tick_var_tokenized=1
 
-  awk -F '``' '{\
+  local code=$(awk -F '``' '{\
     if (NF > 1) {\
       if (length($1))\
         print "__tick_fun_append\n"$1;\
@@ -195,8 +195,8 @@ __tick_fun_tokenize() {
       if (open % 2 == 0)\
         print ""\
     }\
-  }' `caller 1 | cut -d ' ' -f 3` | sed "s/^/S/g;s/$/E/g" | __tick_fun_parse | bash
-
+  }' `caller 1 | cut -d ' ' -f 3` | sed "s/^/S/g;s/$/E/g" | __tick_fun_parse)
+  bash -c "$code" -- $ARGV
   exit
 }
 
