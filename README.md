@@ -17,7 +17,10 @@ A few array manipulation runtime directives are supported:
  * `push`              <pre>\`\`arr.push(${arr_len})\`\`</pre>
  * `pop`               <pre>echo \`\`arr.pop()\`\`</pre>
  * `shift`             <pre>echo \`\`arr.shift()\`\`</pre>
+ * `deletet`             <pre>echo \`\`key.value.delete()\`\`</pre>
  * `items`             <pre>for x in \`\`arr.items()\`\`; do echo "${x}"; done</pre>
+
+Note that this doesn't preclude having variables by those names.  You can have ``key.delete = 1`` and then ``key.delete.delete()``
 
 Objects
 ---

@@ -100,7 +100,7 @@ __tick_json_parse() {
 
 __tick_fun_tokenize_expression() {
   CHAR='[A-Za-z_$\\]'
-  FUNCTION="(push|pop|shift|items|length)"
+  FUNCTION="(push|pop|shift|items|delete|length)[[:space:]]*\("
   NUMBER='[0-9]*'
   STRING="$CHAR*($CHAR*)*"
   PAREN="[()]"
@@ -111,8 +111,6 @@ __tick_fun_tokenize_expression() {
 }
 
 __tick_fun_parse_expression() {
-  local paren=0
-
   while read -r token; do
     token=${token/#S/}
     token=${token/%E/}
@@ -121,16 +119,18 @@ __tick_fun_parse_expression() {
       suffix+="$token"
     else
       case "$token" in
-        push|pop|shift|items|length) function=$token ;;
-        '(') (( paren++ )) ;;
+        'push('|'pop('|'shift('|'items('|'delete('|'length(') function=$token ;;
         ')') 
+          function=${function/%(/}
           case $function in
             items) echo '${!__tick_data_'"$Prefix"'*}' ;;
+            delete) echo 'unset __tick_data_'${Prefix/%_/} ;;
             pop) echo '"$( __tick_runtime_last ${!__tick_data_'"$Prefix"'*} )"; __tick_runtime_pop ${!__tick_data_'"$Prefix"'*}' ;;
             shift) echo '`__tick_runtime_first ${!__tick_data_'"$Prefix"'*}`; __tick_runtime_shift ${!__tick_data_'"$Prefix"'*}' ;;
             length) echo '`__tick_runtime_length ${!__tick_data_'"$Prefix"'*}`' ;;
             *) echo "__tick_runtime_$function \"$arguments\" __tick_data_$Prefix "'${!__tick_data_'"$Prefix"'*}'
           esac
+          unset function
 
           return
           ;;
@@ -140,8 +140,8 @@ __tick_fun_parse_expression() {
         '"'|"'"|']') ;;
         =) done=1 ;;
         # Only respect a space if its in the args.
-        ' ') [ $paren -gt 0 ] && arguments+="$token" ;;
-        *) [ $paren -gt 0 ] && arguments+="$token" || Prefix+="$token" ;;
+        ' ') [ -n "$function" ] && arguments+="$token" ;;
+        *) [ -n "$function" ] && arguments+="$token" || Prefix+="$token" ;;
       esac
     fi
   done
