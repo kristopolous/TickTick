@@ -128,7 +128,7 @@ __tick_fun_parse_expression() {
         #
         # The ( makes sure that you can do key.push = 1, not that you would, but
         # avoiding having reserved words lowers the barrier to entry.  Try doing
-        # say function debug() {} in javascript and then run it in firefox. That's
+        # say function debugger() {} in javascript and then run it in firefox. That's
         # a fun one.
         #
         # So, it's probably better to be as lenient as possible when dealing with
