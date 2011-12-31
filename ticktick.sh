@@ -86,7 +86,7 @@ __tick_json_parse_value() {
       Value=$Token 
       Path="$Prefix$prej"
       Path=${Path/#_/}
-      echo __tick_data_$Path=$Value 
+      echo __tick_data_${Path// /}=$Value 
       ;;
   esac
 }
@@ -155,47 +155,41 @@ __tick_fun_parse_expression() {
 }
 
 __tick_fun_parse() {
-  local open=0
-
-  while read -r token; do
-    token=${token/#S/}
-    token=${token/%E/}
-
+  IFS=
+  while read -r -n 1 token; do
     case "$token" in
-      '``') (( open++ )) ;;
-      __tick_fun_append) echoopts=-n ;;
-      *) 
-        if (( open % 2 == 1 )); then 
-          [ "$token" ] && echo $echoopts "`echo $token | __tick_fun_tokenize_expression | __tick_fun_parse_expression`"
-        else
-          echo $echoopts "$token"
+      '`') 
+        if (( ++ticks == 2 )); then
+          if (( tickFlag == 1 )); then
+            tickFlag=0
+            [ "$code" ] && echo -n "`echo $code | __tick_fun_tokenize_expression | __tick_fun_parse_expression`"
+          else
+            tickFlag=1
+            echo -n "$code"
+          fi
+          unset code
         fi
-        unset echoopts 
         ;;
-    esac
+
+      '') 
+        if (( tickFlag == 0 )); then
+          echo "$code"
+          unset code
+        fi
+        ;;
+
+      *) 
+        ticks=0
+        code+="$token"
+        ;;
+    esac 
   done
 }
 
 __tick_fun_tokenize() {
   export __tick_var_tokenized=1
 
-  local code=$(awk -F '``' '{\
-    if (NF > 1) {\
-      if (length($1))\
-        print "__tick_fun_append\n"$1;\
-      for(i = 2; i <= NF; i++) {\
-        if (++open % 2 == 0)\
-          print "";\
-        if (i % 2 == 0 && length($(i + 1)))\
-          print "__tick_fun_append";\
-        printf "%s\n%s", FS, $i;\
-      }\
-    } else {\
-      printf "%s", $0;\
-      if (open % 2 == 0)\
-        print ""\
-    }\
-  }' `caller 1 | cut -d ' ' -f 3` | sed "s/^/S/g;s/$/E/g" | __tick_fun_parse)
+  local code=$(cat `caller 1 | cut -d ' ' -f 3` | __tick_fun_parse)
   bash -c "$code" -- $ARGV
   exit
 }
