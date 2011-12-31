@@ -98,6 +98,12 @@ __tick_json_parse() {
 }
 # }}} End of code from github
 
+# Since the JSON parser is just json parser, and we have a runtime
+# and assignments built on to this, along with javascript like referencing
+# there is a two-pass system, just because it was easier to code.
+#
+# This one separates out the valid JSON from the runtime library support
+# and little fo' language that this is coded in.
 __tick_fun_tokenize_expression() {
   CHAR='[A-Za-z_$\\]'
   FUNCTION="(push|pop|shift|items|delete|length)[[:space:]]*\("
@@ -119,9 +125,54 @@ __tick_fun_parse_expression() {
       suffix+="$token"
     else
       case "$token" in
+        #
+        # The ( makes sure that you can do key.push = 1, not that you would, but
+        # avoiding having reserved words lowers the barrier to entry.  Try doing
+        # say function debug() {} in javascript and then run it in firefox. That's
+        # a fun one.
+        #
+        # So, it's probably better to be as lenient as possible when dealing with
+        # syntax like this.
+        #
         'push('|'pop('|'shift('|'items('|'delete('|'length(') function=$token ;;
         ')') 
           function=${function/%(/}
+
+          #
+          # Since bash only returns integers, we have to have a significant hack in order
+          # to return a string and then do something to the object. Basically, everything
+          # gets slammed inline.
+          #
+          # Q: Why don't you just reserve a global and then have the subfunction assign to it?
+          #
+          # A: Because the assignment has to happen prior to the function running. There's a number
+          #    of syntax tricks where you can basically emulate "pointers", but then the coder would
+          #    have to know about this "pointer" idea and then deal with their variables a different
+          #    way.
+          #
+          # ---------
+          #
+          # Q: Why don't you just do stuff in a sub-shell and then make sure you emit things in 
+          #    something like a ( ) or a ` ` block?
+          #
+          # A: Because environments get copied into the subshell and then you'd be modifying the
+          #    copy, not the original data.  After the subshell ended, the original environment
+          #    would stay, unmodified.
+          #
+          # ---------
+          # 
+          # Q: Why don't you use the file system and do some magic with subthreads or something?
+          #
+          # A: Really? This should have side-effects? In programming there is something called
+          #    the principle of least astonishment. In a way, the implementation below somewhat
+          #    breaks that principle.  However, using a file system or doing something really 
+          #    funky like that, would violate that principle far more.
+          #
+          # ---------
+          #
+          # But really, I sincerely hate the current solution. If you have a better idea, please
+          # please, open a dialog with me.
+          #
           case $function in
             items) echo '${!__tick_data_'"$Prefix"'*}' ;;
             delete) echo 'unset __tick_data_'${Prefix/%_/} ;;
@@ -154,12 +205,27 @@ __tick_fun_parse_expression() {
   fi
 }
 
+# The purpose of this function is to separate out the Bash code from the
+# special "tick tick" code.  We do this by hijacking the IFS and reading
+# in a single character at a time
 __tick_fun_parse() {
   IFS=
+
+  # code oscillates between being bash or tick tick blocks.
+  code=''
+
+  # By using -n, we are given that a newline will be an empty token. We
+  # can certainly test for that.
   while read -r -n 1 token; do
     case "$token" in
       '`') 
+
+        # To make sure that we find two sequential backticks, we reset the counter
+        # if it's not a backtick.
         if (( ++ticks == 2 )); then
+
+          # Whether we are in the stanza or not, is controlled by a different
+          # variable
           if (( tickFlag == 1 )); then
             tickFlag=0
             [ "$code" ] && echo -n "`echo $code | __tick_fun_tokenize_expression | __tick_fun_parse_expression`"
@@ -167,11 +233,18 @@ __tick_fun_parse() {
             tickFlag=1
             echo -n "$code"
           fi
+
+          # If we have gotten this deep, then we are toggling between backtick
+          # and bash. So se should unset the code.
           unset code
         fi
         ;;
 
       '') 
+        # this is a newline. If we are in ticktick, then we want to consume
+        # them for the parser later on. If we are in bash, then we want to
+        # preserve them.  We do this by emitting our buffer and then clearing
+        # it
         if (( tickFlag == 0 )); then
           echo "$code"
           unset code
@@ -179,7 +252,11 @@ __tick_fun_parse() {
         ;;
 
       *) 
+        # This resets the backtick counter so that `some shell code` doesn't
+        # trip up the tokenizer
         ticks=0
+        
+        # This is a buffer of the current code, either bash or backtick
         code+="$token"
         ;;
     esac 
@@ -187,10 +264,18 @@ __tick_fun_parse() {
 }
 
 __tick_fun_tokenize() {
+  # This makes sure that when we rerun the code that we are
+  # interpreting, we don't try to interpret it again.
   export __tick_var_tokenized=1
 
+  # Using bash's caller function, which is for debugging, we
+  # can find out the name of the program that called us. We 
+  # then cat the calling program and push it through our parser
   local code=$(cat `caller 1 | cut -d ' ' -f 3` | __tick_fun_parse)
+
+  # Take the output and then execute it
   bash -c "$code" -- $ARGV
+
   exit
 }
 
