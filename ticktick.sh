@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 ARGV=$@
+
+__tick_error() {
+  echo "TICKTICK PARSING ERROR: "$1
+}
+
 # This is from https://github.com/dominictarr/JSON.sh
 # See LICENSE for more info. {{{
 __tick_json_tokenize() {
@@ -50,12 +55,20 @@ __tick_json_parse_object() {
     *)
       while :
       do
+        # The key, it should be valid
         case "$Token" in
           '"'*'"'|\$[A-Za-z0-9_]*) key=$Token ;;
+          # If we get here then we aren't on a valid key
+          *) 
+            __tick_error "Object without a Key"
+            break
+            ;;
         esac
 
+        # A colon
         read -r Token
 
+        # The value
         read -r Token
         __tick_json_parse_value "$1" "$key"
         obj+="$key:$Value"        
@@ -205,6 +218,18 @@ __tick_fun_parse_expression() {
   fi
 }
 
+__tick_fun_parse_tickcount_reset() {
+  # If the tick count is 1 then the backtick we encountered was a 
+  # shell code escape. These ticks need to be preserved for the script.
+  if (( ticks == 1 )); then
+    code+='`'
+  fi
+
+  # This resets the backtick counter so that `some shell code` doesn't
+  # trip up the tokenizer
+  ticks=0
+}
+
 # The purpose of this function is to separate out the Bash code from the
 # special "tick tick" code.  We do this by hijacking the IFS and reading
 # in a single character at a time
@@ -241,6 +266,8 @@ __tick_fun_parse() {
         ;;
 
       '') 
+        __tick_fun_parse_tickcount_reset
+
         # this is a newline. If we are in ticktick, then we want to consume
         # them for the parser later on. If we are in bash, then we want to
         # preserve them.  We do this by emitting our buffer and then clearing
@@ -249,12 +276,11 @@ __tick_fun_parse() {
           echo "$code"
           unset code
         fi
+
         ;;
 
       *) 
-        # This resets the backtick counter so that `some shell code` doesn't
-        # trip up the tokenizer
-        ticks=0
+        __tick_fun_parse_tickcount_reset
         
         # This is a buffer of the current code, either bash or backtick
         code+="$token"
@@ -273,8 +299,26 @@ __tick_fun_tokenize() {
   # then cat the calling program and push it through our parser
   local code=$(cat `caller 1 | cut -d ' ' -f 3` | __tick_fun_parse)
 
-  # Take the output and then execute it
-  bash -c "$code" -- $ARGV
+  # Before the execution we search to see if we emitted any parsing errors
+  hasError=`echo "$code" | grep "TICKTICK PARSING ERROR" | wc -l`
+
+  if [ $__tick_var_debug ]; then
+    printf "%s\n" "$code"
+    exit 0
+  fi
+
+  # If there are no errors, then we go ahead
+  if (( hasError == 0 )); then
+    # Take the output and then execute it
+
+    bash -c "$code" -- $ARGV
+  else
+    echo "Parsing Error Detected, see below"
+
+    # printf observes the new lines
+    printf "%s\n" "$code"
+    echo "Parsing stopped here."
+  fi
 
   exit
 }
