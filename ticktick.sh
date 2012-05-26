@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+
 ARGV=$@
 
 __tick_error() {
@@ -38,6 +39,9 @@ __tick_json_parse_array() {
         case "$Token" in
           ']') break ;;
           ',') ary+=_ ;;
+          *) 
+            __tick_error "Array syntax malformed"
+            break ;;
         esac
         read -r Token
       done
