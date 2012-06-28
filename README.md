@@ -4,6 +4,22 @@ TickTick enables you to put JSON in bash scripts.  Yes, just encapsulate them wi
 
 **Note: This is just a fun hack.** You may want to consider using mature languages like Ruby or Perl to solve actual real life problems.  Oh who am I kidding, I use whitespace and brainfuck every day.
 
+# Usage
+
+Proper usage (if there is such a thing), is to place the following line right after the "shbang" at the top of your script. For instance:
+
+    #!/bin/bash
+    #
+    # Nuclear_meltdown_preventer.sh
+    #
+    # This is really important stuff. Don't edit it!
+    #
+    . ticktick.sh
+
+    ..
+
+See how that's near the tippity-top? That's where it's supposed to go. If you put it lower, all bets are off. :-(
+
 # API
 
 Arrays
