@@ -122,7 +122,7 @@ __tick_json_parse() {
 # This one separates out the valid JSON from the runtime library support
 # and little fo' language that this is coded in.
 __tick_fun_tokenize_expression() {
-  CHAR='[A-Za-z_$\\]'
+  CHAR='[0-9]*[A-Za-z_$\\][0-9]*'
   FUNCTION="(push|pop|shift|items|delete|length)[[:space:]]*\("
   NUMBER='[0-9]*'
   STRING="$CHAR*($CHAR*)*"
@@ -202,6 +202,8 @@ __tick_fun_parse_expression() {
 
           return
           ;;
+
+        [0-9]*[A-Za-z]*[0-9]*) [ -n "$function" ] && arguments+="$token" || Prefix+="$token" ;;
 
         [0-9]*) Prefix+=`printf "%012d" $token` ;;
         '['|.) Prefix+=_ ;;
