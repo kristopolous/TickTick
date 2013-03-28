@@ -1,5 +1,6 @@
 #!/bin/bash
 
+__tick_var_debug=1
 . ticktick.sh
 
 bob=Bob

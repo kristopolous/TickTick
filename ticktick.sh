@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Add this line to debug
+# __tick_var_debug=1
+
 ARGV=$@
 
 __tick_error() {
@@ -30,7 +33,7 @@ __tick_json_parse_array() {
     *)
       while :
       do
-        __tick_json_parse_value "$1" "`printf "%012d" $index`"
+        __tick_json_parse_value "$1" "`printf "%d" $index`"
 
         (( index++ ))
         ary+="$Value" 
@@ -38,7 +41,7 @@ __tick_json_parse_array() {
         read -r Token
         case "$Token" in
           ']') break ;;
-          ',') ary+=_ ;;
+          ',') ary+=. ;;
           *) 
             __tick_error "Array syntax malformed"
             break ;;
@@ -89,9 +92,11 @@ __tick_json_parse_object() {
 }
 
 __tick_json_parse_value() {
-  local jpath="${1:+$1_}$2"
+  local jpath="${1:+$1.}$2"
   local prej=${jpath//\"/}
 
+  echo $prej
+  echo $jpath
   [ "$prej" ] && prej="_$prej"
   [ "$prej" ] && prej=${prej/-/__hyphen__}
 
@@ -103,7 +108,7 @@ __tick_json_parse_value() {
       Value=$Token 
       Path="$Prefix$prej"
       Path=${Path/#_/}
-      echo __tick_data_${Path// /}=$Value 
+      echo ${Path// /}]=$Value 
       ;;
   esac
 }
@@ -205,8 +210,8 @@ __tick_fun_parse_expression() {
 
         [0-9]*[A-Za-z]*[0-9]*) [ -n "$function" ] && arguments+="$token" || Prefix+="$token" ;;
 
-        [0-9]*) Prefix+=`printf "%012d" $token` ;;
-        '['|.) Prefix+=_ ;;
+        [0-9]*) Prefix+=`printf "%d" $token` ;;
+        '['|.) Prefix+=[ ;;
         '"'|"'"|']') ;;
         =) done=1 ;;
         # Only respect a space if its in the args.
@@ -220,7 +225,7 @@ __tick_fun_parse_expression() {
     echo "$suffix" | __tick_json_tokenize | __tick_json_parse
   else
     Prefix=${Prefix/-/__hyphen__}
-    echo '${__tick_data_'$Prefix'}'
+    echo '${'$Prefix'}'
   fi
 }
 
@@ -354,7 +359,7 @@ __tick_runtime_push() {
   local lastarg=${!#}
 
   let nextval=${lastarg/$base/}+1
-  nextval=`printf "%012d" $nextval`
+  nextval=`printf "%d" $nextval`
 
   eval $base$nextval=\'$value\'
 }

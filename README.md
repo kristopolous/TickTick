@@ -112,8 +112,67 @@ Inline Parsing
 
     echo Indexing an array, doing variable assignments
 
-    person0=``people.HR[0]``
-    echo $person0 ``people.HR[1]``
+    person0=$people[HR.0]
+    echo $person0 $people[HR.1]
+
+Easier Hash Creation
+---
+
+Before:
+
+    #!/bin/bash
+
+    declare -A mapSite
+    declare -A mapPassword
+
+    mapSite[acme-qa]="acmeqa.com"
+    mapPassword[acme-qa]="acmeqa-pass"
+
+    mapSite[acme-prod]="acmeprod.com"
+    mapPassword[acme-prod]="acmeprod-pass"
+
+    mapSite[zombo-qa]="zomboqa.com"
+    mapPassword[zombo-qa]="zomboqa-pass"
+
+    mapSite[zombo-prod]="zomboproda.com"
+    mapPassword[zombo-prod]="zomboprod-pass"
+
+    key=${1}-${2}
+
+    site=$mapSite["$key"]
+    pass=$mapPassword["$key"]
+
+    curl -H "user:$pass" $site
+
+With ticktick
+
+    #!/bin/bash
+
+    . ./ticktick.sh
+
+    ``
+    map = {
+      'acme': {
+        'qa': [ 'acmeqa.com', 'acmeqa-pass' ],
+        'prod': [ 'acmeprod.com', 'acmeprod-pass' ]
+       },
+      'zombo': {
+        'qa': [ 'zomboqa.com', 'zomboqa-pass' ],
+        'prod': [ 'zomboprod.com', 'zomboprod-pass' ]
+       }
+    }
+    ``
+
+    # method 1 - using bash arrays
+
+    site=$map[$1".$2".0]
+    pass=$map[$1".$2".1]
+
+    curl -H "user:$pass" $site
+
+    # method 2 - straight ticktick
+
+    curl -H "user:``map[$1][$2].pop()``" ``map[$1][$2].pop()``
 
 Using a File or cURL
 ---
