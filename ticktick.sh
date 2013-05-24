@@ -33,13 +33,13 @@ __tick_json_parse_array() {
         __tick_json_parse_value "$1" "`printf "%012d" $index`"
 
         (( index++ ))
-        ary+="$Value" 
+        ary+="$Value"
 
         read -r Token
         case "$Token" in
           ']') break ;;
           ',') ary+=_ ;;
-          *) 
+          *)
             __tick_error "Array syntax malformed"
             break ;;
         esac
@@ -63,7 +63,7 @@ __tick_json_parse_object() {
         case "$Token" in
           '"'*'"'|\$[A-Za-z0-9_]*) key=$Token ;;
           # If we get here then we aren't on a valid key
-          *) 
+          *)
             __tick_error "Object without a Key"
             break
             ;;
@@ -75,7 +75,7 @@ __tick_json_parse_object() {
         # The value
         read -r Token
         __tick_json_parse_value "$1" "$key"
-        obj+="$key:$Value"        
+        obj+="$key:$Value"
 
         read -r Token
         case "$Token" in
@@ -99,11 +99,11 @@ __tick_json_parse_value() {
     '{') __tick_json_parse_object "$jpath" ;;
     '[') __tick_json_parse_array  "$jpath" ;;
 
-    *) 
-      Value=$Token 
+    *)
+      Value=$Token
       Path="$Prefix$prej"
       Path=${Path/#_/}
-      echo __tick_data_${Path// /}=$Value 
+      echo __tick_data_${Path// /}=$Value
       ;;
   esac
 }
@@ -152,7 +152,7 @@ __tick_fun_parse_expression() {
         # syntax like this.
         #
         'push('|'pop('|'shift('|'items('|'delete('|'length(') function=$token ;;
-        ')') 
+        ')')
           function=${function/%(/}
 
           #
@@ -169,7 +169,7 @@ __tick_fun_parse_expression() {
           #
           # ---------
           #
-          # Q: Why don't you just do stuff in a sub-shell and then make sure you emit things in 
+          # Q: Why don't you just do stuff in a sub-shell and then make sure you emit things in
           #    something like a ( ) or a ` ` block?
           #
           # A: Because environments get copied into the subshell and then you'd be modifying the
@@ -177,12 +177,12 @@ __tick_fun_parse_expression() {
           #    would stay, unmodified.
           #
           # ---------
-          # 
+          #
           # Q: Why don't you use the file system and do some magic with subthreads or something?
           #
           # A: Really? This should have side-effects? In programming there is something called
           #    the principle of least astonishment. In a way, the implementation below somewhat
-          #    breaks that principle.  However, using a file system or doing something really 
+          #    breaks that principle.  However, using a file system or doing something really
           #    funky like that, would violate that principle far more.
           #
           # ---------
@@ -225,7 +225,7 @@ __tick_fun_parse_expression() {
 }
 
 __tick_fun_parse_tickcount_reset() {
-  # If the tick count is 1 then the backtick we encountered was a 
+  # If the tick count is 1 then the backtick we encountered was a
   # shell code escape. These ticks need to be preserved for the script.
   if (( ticks == 1 )); then
     code+='`'
@@ -249,7 +249,7 @@ __tick_fun_parse() {
   # can certainly test for that.
   while read -r -n 1 token; do
     case "$token" in
-      '`') 
+      '`')
 
         # To make sure that we find two sequential backticks, we reset the counter
         # if it's not a backtick.
@@ -271,7 +271,7 @@ __tick_fun_parse() {
         fi
         ;;
 
-      '') 
+      '')
         __tick_fun_parse_tickcount_reset
 
         # this is a newline. If we are in ticktick, then we want to consume
@@ -285,13 +285,13 @@ __tick_fun_parse() {
 
         ;;
 
-      *) 
+      *)
         __tick_fun_parse_tickcount_reset
-        
+
         # This is a buffer of the current code, either bash or backtick
         code+="$token"
         ;;
-    esac 
+    esac
   done
 }
 
@@ -301,7 +301,7 @@ __tick_fun_tokenize() {
   export __tick_var_tokenized=1
 
   # Using bash's caller function, which is for debugging, we
-  # can find out the name of the program that called us. We 
+  # can find out the name of the program that called us. We
   # then cat the calling program and push it through our parser
   local code=$(cat `caller 1 | cut -d ' ' -f 3` | __tick_fun_parse)
 
