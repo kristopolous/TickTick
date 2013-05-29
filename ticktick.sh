@@ -3,7 +3,7 @@
 # Based on work by Chris McKenzie and Dominic Tarr
 # Licensed under MIT and Apache 2.
 
-ARGV=$@
+ARGV=("$@")
 
 __(){ [ $__tick_debug ] && echo "DBG: $@" 1>&2 || :; }
 
@@ -251,7 +251,7 @@ __tick_fun_tokenize() {
 
     # Using bash's caller function, which is for debugging, we
     # can find out the name of the program that called us.
-    __tick_source=`caller 1 | cut -d ' ' -f 3`
+    export __tick_source=`caller 1 | cut -d ' ' -f 3`
     local dst="${__tick_source}.ticktick"
 
     __ "ticktick tokenizing $__tick_source"
@@ -263,7 +263,7 @@ __tick_fun_tokenize() {
     if [ "$parseErrors" ]; then
         # the ignore parse errors are used by the test scripts
         if [ $__tick_ignore_parse_errors ]; then
-            bash $dst -- $ARGV
+            bash $dst "${ARGV[@]}"
             # ignore ret code when there's parse errors
         else
             # print the parse errors
@@ -272,7 +272,7 @@ __tick_fun_tokenize() {
         # exit code is number of parse errors reported
         ret=`echo "$parseErrors" | wc -l`
     else
-        bash $dst -- $ARGV
+        bash $dst "${ARGV[@]}"
         ret=$?
     fi
     [ $__tick_save_tokenized ] || rm $dst
@@ -330,3 +330,6 @@ if [ ! -z "$__tick_export_data" ]; then
     eval $__tick_export_data
     unset __tick_export_data
 fi
+
+## since we screwed up $0..
+O="$__tick_source"
