@@ -298,19 +298,19 @@ __tick_runtime_lookup() {
         *) val=${__tick_data_value[$1]} ;;
     esac
     case "$2" in
-        ''\''*'\''')
+        ''\''*'\''') # values
             local next="$val[*]"
             echo -n ${!next}
             ;;
-        ''\''#'\''')
+        ''\''#'\''') # length
             local next="$val[*]"
             eval echo -n '${#'$next'}'
             ;;
-        ''\''!'\''')
+        ''\''!'\''') # keys
             local next="$val[*]"
             eval echo -n '${!'$next'}'
             ;;
-        *)
+        *) # index
             local next="$val[$2]"
             shift 2 && __tick_runtime_lookup ${!next} $* || echo -n ${val}
             ;;
@@ -320,6 +320,46 @@ __tick_runtime_lookup() {
 tickParse() {
     __tick_fun_parse_expression "$*"
 }
+
+tickExport() {
+    case "$1" in
+        __tick_data_obj_*)
+            echo -n "{"
+            local i=0
+            for k in `__tick_runtime_lookup $1 ''\''!'\'''`; do
+                if ((i++)); then echo -n ","; fi
+                local n="$1[$k]"
+                echo -n '"'$k'":'
+                tickExport ${!n}
+            done
+            echo "}"
+            ;;
+        __tick_data_arr_*)
+            echo -n "["
+            for k in `__tick_runtime_lookup $1 ''\''!'\'''`; do
+                if ((k)); then echo -n ","; fi
+                local n="$1[$k]"
+                tickExport ${!n}
+            done
+            echo "]"
+            ;;
+        [0-9]*)
+            local v=${__tick_data_value[$1]}
+            case "$v" in
+                __tick_data_*)
+                    tickExport "$v" ;;
+                [0-9]*)
+                    echo -n "$v" ;;
+                *)
+                    echo -n '"'$v'"' ;;
+            esac
+            ;;
+        *)
+            echo -n '<<que!? ('"$1"') as in, this is a bug!>>'
+            ;;
+    esac
+}
+
 ## } End of Runtime
 
 ## process input script on first pass
