@@ -332,7 +332,7 @@ tickExport() {
                 echo -n '"'$k'":'
                 tickExport ${!n}
             done
-            echo "}"
+            echo -n "}"
             ;;
         __tick_data_arr_*)
             echo -n "["
@@ -341,7 +341,7 @@ tickExport() {
                 local n="$1[$k]"
                 tickExport ${!n}
             done
-            echo "]"
+            echo -n "]"
             ;;
         [0-9]*)
             local v=${__tick_data_value[$1]}
