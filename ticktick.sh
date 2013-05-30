@@ -165,7 +165,10 @@ __tick_fun_parse_expression() {
     if [ "${path[0]:0:1}" != "$" ]; then
         path[0]='${__tick_data_root_'${path[0]:-default}'}'
     fi
-    echo -n '`__tick_runtime_lookup '${path[@]}'`'
+
+    local tick='`'
+    [ "$2" == "1" ] && tick='\`'
+    echo -n $tick'__tick_runtime_lookup '${path[@]}$tick
 }
 
 # The purpose of this function is to separate out the Bash code from the
@@ -176,6 +179,7 @@ __tick_fun_parse() {
     local code=''
     local IFS=
     local tickParse=0
+    local ticktock=0
 
     __tick_line=1
 
@@ -184,6 +188,7 @@ __tick_fun_parse() {
     while read -r -n 1 token; do
         case "$token" in
             '`')
+                ticktock=$(((ticktock+1)%2))
 
                 # To make sure that we find two sequential backticks, we reset the counter
                 # if it's not a backtick.
@@ -193,7 +198,7 @@ __tick_fun_parse() {
                     # variable
                     if (( tickFlag == 1 )); then
                         tickFlag=0
-                        [ "$code" ] && __tick_fun_parse_expression "$code"
+                        [ "$code" ] && __tick_fun_parse_expression "$code" $ticktock
                     else
                         tickFlag=1
                         if [ $tickParse -gt 0 ] || [ `echo "$code" | grep -c tickParse` -gt 0 ]; then
