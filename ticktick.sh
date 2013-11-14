@@ -1,6 +1,18 @@
 #!/usr/bin/env bash
 
 ARGV=$@
+GREP=grep
+EGREP=egrep
+
+# Support {{ 
+# // The following code is to make sure
+# // that this runs on various platforms as suggested.
+# See https://github.com/kristopolous/TickTick/issues/26
+if [ `uname` == "SunOS" ]; then
+  GREP=ggrep
+  EGREP=gegrep
+fi
+# }} End support
 
 __tick_error() {
   echo "TICKTICK PARSING ERROR: "$1
@@ -16,7 +28,7 @@ __tick_json_tokenize() {
   local NUMBER='-?(0|[1-9][0-9]*)([.][0-9]*)?([eE][+-]?[0-9]*)?'
   local KEYWORD='null|false|true'
   local SPACE='[[:space:]]+'
-  egrep -ao "$STRING|$VARIABLE|$NUMBER|$KEYWORD|$SPACE|." --color=never | egrep -v "^$SPACE$"  # eat whitespace
+  $EGREP -ao "$STRING|$VARIABLE|$NUMBER|$KEYWORD|$SPACE|." --color=never | $EGREP -v "^$SPACE$"  # eat whitespace
 }
 
 __tick_json_parse_array() {
@@ -129,7 +141,7 @@ __tick_fun_tokenize_expression() {
   PAREN="[()]"
   QUOTE="[\"\']"
   SPACE='[[:space:]]+'
-  egrep -ao "$FUNCTION|$STRING|$QUOTE|$PAREN|$NUMBER|$SPACE|." --color=never |\
+  $EGREP -ao "$FUNCTION|$STRING|$QUOTE|$PAREN|$NUMBER|$SPACE|." --color=never |\
     sed "s/^/S/g;s/$/E/g" # Make sure spaces are respected
 }
 
@@ -306,7 +318,7 @@ __tick_fun_tokenize() {
   local code=$(cat `caller 1 | cut -d ' ' -f 3` | __tick_fun_parse)
 
   # Before the execution we search to see if we emitted any parsing errors
-  hasError=`echo "$code" | grep "TICKTICK PARSING ERROR" | wc -l`
+  hasError=`echo "$code" | $GREP "TICKTICK PARSING ERROR" | wc -l`
 
   if [ $__tick_var_debug ]; then
     printf "%s\n" "$code"
