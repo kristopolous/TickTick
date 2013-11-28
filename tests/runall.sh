@@ -1,7 +1,13 @@
 #!/bin/bash
 . common.sh
 
-for i in *.test.sh; do
+if [ $# -gt 0 ]; then
+  toRun="*${1}*test.sh"
+else
+  toRun=*.test.sh
+fi
+
+for i in $toRun; do
   test_init
   echo "$i {"
   ./$i | sed "s/^/   /g"
