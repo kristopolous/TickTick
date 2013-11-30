@@ -184,41 +184,8 @@ __tick_fun_parse_expression() {
         ')') 
           function=${function/%(/}
 
-          #
-          # Since bash only returns integers, we have to have a significant hack in order
-          # to return a string and then do something to the object. Basically, everything
-          # gets slammed inline.
-          #
-          # Q: Why don't you just reserve a global and then have the subfunction assign to it?
-          #
-          # A: Because the assignment has to happen prior to the function running. There's a number
-          #    of syntax tricks where you can basically emulate "pointers", but then the coder would
-          #    have to know about this "pointer" idea and then deal with their variables a different
-          #    way.
-          #
-          # ---------
-          #
-          # Q: Why don't you just do stuff in a sub-shell and then make sure you emit things in 
-          #    something like a ( ) or a ` ` block?
-          #
-          # A: Because environments get copied into the subshell and then you'd be modifying the
-          #    copy, not the original data.  After the subshell ended, the original environment
-          #    would stay, unmodified.
-          #
-          # ---------
-          # 
-          # Q: Why don't you use the file system and do some magic with subthreads or something?
-          #
-          # A: Really? This should have side-effects? In programming there is something called
-          #    the principle of least astonishment. In a way, the implementation below somewhat
-          #    breaks that principle.  However, using a file system or doing something really 
-          #    funky like that, would violate that principle far more.
-          #
-          # ---------
-          #
-          # But really, I sincerely hate the current solution. If you have a better idea, please
-          # please, open a dialog with me.
-          #
+          # For a rational of the method below see: 
+          # https://github.com/kristopolous/TickTick/wiki/Function-Logic
           case $function in
             items) echo '${!__tick_data_'"$Prefix"'*}' ;;
             delete) echo 'unset __tick_data_'${Prefix/%_/} ;;
