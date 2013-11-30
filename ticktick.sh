@@ -100,10 +100,27 @@ __tick_json_parse_object() {
   esac
 }
 
+__tick_json_sanitize_value() {
+  value=""
+  IFS=
+  while read -r -n 1 token; do
+    case "$token" in
+      [\\\"\;,=\(\)\[\]{}.\':\ ]) 
+        value+=`printf "%d" \'$token` 
+        ;;
+      *)
+        value+="$token"
+        ;;
+    esac
+  done
+  echo $value
+}
+
 __tick_json_parse_value() {
   local jpath="${1:+$1_}$2"
   local prej=${jpath//\"/}
 
+  prej="`echo $prej | __tick_json_sanitize_value`"
   [ "$prej" ] && prej="_$prej"
   [ "$prej" ] && prej=${prej/-/__hyphen__}
 
@@ -231,6 +248,7 @@ __tick_fun_parse_expression() {
   if [ "$suffix" ]; then
     echo "$suffix" | __tick_json_tokenize | __tick_json_parse
   else
+    Prefix="`echo $Prefix | __tick_json_sanitize_value`"
     Prefix=${Prefix/-/__hyphen__}
     echo '${__tick_data_'$Prefix'}'
   fi
@@ -267,7 +285,7 @@ __tick_fun_parse() {
         # if it's not a backtick.
         if (( ++ticks == 2 )); then
 
-          # Whether we are in the stanza or not, is controlled by a different
+          # Whether we are in the stanza or not is controlled by a different
           # variable
           if (( tickFlag == 1 )); then
             tickFlag=0
