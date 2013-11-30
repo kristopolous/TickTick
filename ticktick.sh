@@ -105,7 +105,7 @@ __tick_json_sanitize_value() {
   IFS=
   while read -r -n 1 token; do
     case "$token" in
-      [\\\"\;,=\(\)\[\]{}.\':\ ]) 
+      [\-\\\"\;,=\(\)\[\]{}.\':\ ]) 
         value+=`printf "%d" \'$token` 
         ;;
       *)
@@ -122,7 +122,6 @@ __tick_json_parse_value() {
 
   prej="`echo $prej | __tick_json_sanitize_value`"
   [ "$prej" ] && prej="_$prej"
-  [ "$prej" ] && prej=${prej/-/__hyphen__}
 
   case "$Token" in
     '{') __tick_json_parse_object "$jpath" ;;
@@ -216,7 +215,6 @@ __tick_fun_parse_expression() {
     echo "$suffix" | __tick_json_tokenize | __tick_json_parse
   else
     Prefix="`echo $Prefix | __tick_json_sanitize_value`"
-    Prefix=${Prefix/-/__hyphen__}
     echo '${__tick_data_'$Prefix'}'
   fi
 }
