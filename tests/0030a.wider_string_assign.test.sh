@@ -21,10 +21,11 @@ key = {
   "equal=separated" : 10,
   "semicolon;separated" : 11,
   "comma,separated" : 12,
-  "escapedquote\"separated" : 13,
-  "multipe 'tokens' [at once] but matching" : 14,
-  "multipe 'tokens: ]at once] and not matching" : 15,
-  "other:\"tokens.:[slashed.,once,}and{not{matching" : 16,
-  "other=((tokens){;at\nonce\tand)not[matching" : 17 
+  "hyphen-separated" : 13,
+  "escapedquote\"separated" : 14,
+  "multipe 'tokens' [at once] but matching" : 15,
+  "multipe 'tokens: ]at once] and not matching" : 16,
+  "other:\"tokens.:[slashed.,once,}and{not{matching" : 17,
+  "other=((tokens){;at\nonce\tand)not[matching" : 18 
 }
 ``
