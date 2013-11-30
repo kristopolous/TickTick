@@ -9,8 +9,8 @@ test_assert() {
 }
 
 test_init() {
-  error_count=0
-  test_count=0
+  export error_count=0
+  export test_count=0
 }
 
 test_error() {
@@ -18,14 +18,7 @@ test_error() {
   echo "$1"
 }
 
-test_done(){
-  if (( error_count == 0 )); then
-    echo "Success. "
-  else
-    echo "Failed. "
-  fi
-}
-
 export -f test_assert
+export -f test_error
 export error_count
 export test_count
