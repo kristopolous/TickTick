@@ -17,10 +17,15 @@ __tick_var_debug=1
   "rightcurly}separated" : 5,
   "leftbracket[separated" : 6,
   "rightbracket]separated" : 7,
-  "comma,separated" : 8,
-  "escapedquote\"separated" : 9,
-  "multipe 'tokens' [at once] but matching" : 10,
-  "multipe 'tokens: ]at once] and not matching" : 11,
-  "other:\"tokens.:[at.,once,}and{not{matching" : 12
+  "leftparen(separated" : 8,
+  "rightparen)separated" : 9,
+  "equal=separated" : 10,
+  "semicolon;separated" : 11,
+  "comma,separated" : 12,
+  "escapedquote\"separated" : 13,
+  "multipe 'tokens' [at once] but matching" : 14,
+  "multipe 'tokens: ]at once] and not matching" : 15,
+  "other:\"tokens.:[at.,once,}and{not{matching" : 16,
+  "other=((tokens){;at\nonce\tand)not[matching" : 17 
 }
 ``
