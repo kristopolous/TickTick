@@ -117,8 +117,12 @@ __tick_json_sanitize_value() {
 }
 
 __tick_json_parse_value() {
-  local jpath="${1:+$1_}$2"
-  local prej=${jpath//\"/}
+  local start=${1/%\"/}
+  local end=${2/#\"/}
+
+  local jpath="${start:+${start}_}$end"
+  local prej=${jpath/#\"/}
+  prej=${prej/%\"/}
 
   prej="`echo $prej | __tick_json_sanitize_value`"
   [ "$prej" ] && prej="_$prej"
@@ -150,18 +154,22 @@ __tick_json_parse() {
 # This one separates out the valid JSON from the runtime library support
 # and little fo' language that this is coded in.
 __tick_fun_tokenize_expression() {
-  CHAR='[0-9]*[A-Za-z_$\\][0-9]*'
+  CHAR='[0-9]*[A-Za-z_$][0-9]*'
   FUNCTION="(push|pop|shift|items|delete|length)[[:space:]]*\("
   NUMBER='[0-9]*'
   STRING="$CHAR*($CHAR*)*"
   PAREN="[()]"
-  QUOTE="[\"\']"
+  QUOTE="[\"\'\\]"
   SPACE='[[:space:]]+'
   $EGREP -ao "$FUNCTION|$STRING|$QUOTE|$PAREN|$NUMBER|$SPACE|." --color=never |\
     sed "s/^/S/g;s/$/E/g" # Make sure spaces are respected
 }
 
 __tick_fun_parse_expression() {
+  
+  quoteToken=""
+  backslash=0
+
   while read -r token; do
     token=${token/#S/}
     token=${token/%E/}
@@ -169,45 +177,71 @@ __tick_fun_parse_expression() {
     if [ $done ]; then
       suffix+="$token"
     else
-      case "$token" in
-        #
-        # The ( makes sure that you can do key.push = 1, not that you would, but
-        # avoiding having reserved words lowers the barrier to entry.  Try doing
-        # say function debugger() {} in javascript and then run it in firefox. That's
-        # a fun one.
-        #
-        # So, it's probably better to be as lenient as possible when dealing with
-        # syntax like this.
-        #
-        'push('|'pop('|'shift('|'items('|'delete('|'length(') function=$token ;;
-        ')') 
-          function=${function/%(/}
+      if [ -z $quoteToken ]; then
+        case "$token" in
+          #
+          # The ( makes sure that you can do key.push = 1, not that you would, but
+          # avoiding having reserved words lowers the barrier to entry.  Try doing
+          # say function debugger() {} in javascript and then run it in firefox. That's
+          # a fun one.
+          #
+          # So, it's probably better to be as lenient as possible when dealing with
+          # syntax like this.
+          #
+          'push('|'pop('|'shift('|'items('|'delete('|'length(') function=$token ;;
+          ')') 
+            function=${function/%(/}
 
-          # For a rational of the method below see: 
-          # https://github.com/kristopolous/TickTick/wiki/Function-Logic
-          case $function in
-            items) echo '${!__tick_data_'"$Prefix"'*}' ;;
-            delete) echo 'unset __tick_data_'${Prefix/%_/} ;;
-            pop) echo '"$( __tick_runtime_last ${!__tick_data_'"$Prefix"'*} )"; __tick_runtime_pop ${!__tick_data_'"$Prefix"'*}' ;;
-            shift) echo '`__tick_runtime_first ${!__tick_data_'"$Prefix"'*}`; __tick_runtime_shift ${!__tick_data_'"$Prefix"'*}' ;;
-            length) echo '`__tick_runtime_length ${!__tick_data_'"$Prefix"'*}`' ;;
-            *) echo "__tick_runtime_$function \"$arguments\" __tick_data_$Prefix "'${!__tick_data_'"$Prefix"'*}'
-          esac
-          unset function
+            # For a rational of the method below see: 
+            # https://github.com/kristopolous/TickTick/wiki/Function-Logic
+            case $function in
+              items) echo '${!__tick_data_'"$Prefix"'*}' ;;
+              delete) echo 'unset __tick_data_'${Prefix/%_/} ;;
+              pop) echo '"$( __tick_runtime_last ${!__tick_data_'"$Prefix"'*} )"; __tick_runtime_pop ${!__tick_data_'"$Prefix"'*}' ;;
+              shift) echo '`__tick_runtime_first ${!__tick_data_'"$Prefix"'*}`; __tick_runtime_shift ${!__tick_data_'"$Prefix"'*}' ;;
+              length) echo '`__tick_runtime_length ${!__tick_data_'"$Prefix"'*}`' ;;
+              *) echo "__tick_runtime_$function \"$arguments\" __tick_data_$Prefix "'${!__tick_data_'"$Prefix"'*}'
+            esac
+            unset function
 
-          return
-          ;;
+            return
+            ;;
 
-        [0-9]*[A-Za-z]*[0-9]*) [ -n "$function" ] && arguments+="$token" || Prefix+="$token" ;;
+          [0-9]*[A-Za-z]*[0-9]*) [ -n "$function" ] && arguments+="$token" || Prefix+="$token" ;;
+          [0-9]*) Prefix+=`printf "%012d" $token` ;;
+          '['|.) Prefix+=_ ;;
 
-        [0-9]*) Prefix+=`printf "%012d" $token` ;;
-        '['|.) Prefix+=_ ;;
-        '"'|"'"|']') ;;
-        =) done=1 ;;
-        # Only respect a space if its in the args.
-        ' ') [ -n "$function" ] && arguments+="$token" ;;
-        *) [ -n "$function" ] && arguments+="$token" || Prefix+="$token" ;;
-      esac
+          [\"\'])
+            quoteToken=$token
+            ;;
+            
+          [\[\]]) ;;
+          =) done=1 ;;
+          # Only respect a space if its in the args.
+          ' ') [ -n "$function" ] && arguments+="$token" ;;
+          *) [ -n "$function" ] && arguments+="$token" || Prefix+="$token" ;;
+        esac
+      else
+        case "$token" in
+          \\)
+            if (( backslash < 0 )); then
+              backslash=2 
+            fi
+            # The other tokenizer preserves the backslashes, so we will too. 
+            Prefix+="$token" 
+            ;;
+
+          $quoteToken)
+            if (( backslash < 0 )); then
+              quoteToken=""
+            else
+              Prefix+="$token" 
+            fi
+            ;;
+          *) Prefix+="$token" ;;
+        esac
+        (( backslash -- ))
+      fi
     fi
   done
 
