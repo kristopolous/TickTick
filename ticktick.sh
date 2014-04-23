@@ -157,7 +157,7 @@ __tick_fun_tokenize_expression() {
   CHAR='[0-9]*[A-Za-z_$][0-9]*'
   FUNCTION="(push|pop|shift|items|delete|length)[[:space:]]*\("
   NUMBER='[0-9]*'
-  STRING="$CHAR*($CHAR*)*"
+  STRING="$CHAR($CHAR)*"
   PAREN="[()]"
   QUOTE="[\"\'\\]"
   SPACE='[[:space:]]+'
