@@ -391,6 +391,13 @@ __tick_runtime_push() {
 tickParse() {
   eval `echo "$1" | __tick_json_tokenize | __tick_json_parse | tr '\n' ';'`
 }
+
+tickVars() {
+  echo "@ Line `caller | sed s/\ NULL//`:"
+  set | grep ^__tick_data | sed s/__tick_data_/"  "/
+  echo
+}
+
 ## } End of Runtime
 
 
