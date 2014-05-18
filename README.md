@@ -45,12 +45,19 @@ Objects
  * `[]` (to index)      <pre>echo \`\`obj["foo"]\`\`</pre>
  * `.` (to index)       <pre>echo \`\`obj.baz\`\`</pre>
 
+Miscellaneous
+---
+
+ * Inline parsing: You can parse a file in with the `tickParse` routine (see the example).
+ * Show all varaibles: You can see the current values defined in the TickTick world with the `tickVars` routine.
+ * Dry run (display compiled code): TickTick is a mini-compiler that emits bash. If you declare `extern __tick_var_debug=1` at the top of your code, then the code will not run but instead print what it would have run.
+
 Bash variables ($) in JSON
 ---
 
 Along with assignment operations<sup>1</sup>, and Javascript like indexing into objects and arrays.
 
-Additionally, bash variables (eg., "$name") are preserved in the ticktick blocks.  For instance, once could do
+Additionally, bash variables (eg., "$name") are preserved in the TickTick blocks.  For instance, once could do
 
 <pre>
 `` Var.Data = [] ``
