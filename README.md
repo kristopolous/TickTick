@@ -48,13 +48,13 @@ Objects
 Miscellaneous
 ---
 
-## tickParse - parse things inline
+#### tickParse - parse things inline
  * Inline parsing: You can parse a file in with the `tickParse` routine (see the example).
 
-## tickVars - see the currently defined variables
+#### tickVars - see the currently defined variables
  * Show all variables: You can see the current values defined in the TickTick world with the `tickVars` routine.
 
-## __tick__vear_debug - See the interim bash code
+#### __tick__vear_debug - See the interim bash code
  * Dry run (display compiled code): TickTick is a mini-compiler that emits bash. If you declare `extern __tick_var_debug=1` at the top of your code, then the code will not run but instead print what it would have run.
 
 Bash variables ($) in JSON
