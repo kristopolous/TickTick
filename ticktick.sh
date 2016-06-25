@@ -324,6 +324,9 @@ __tick_fun_parse() {
   done
 }
 
+# The code tokenization and interpretation of bash code.  This
+# can be passed a path to be interpreted or, if that is not passed
+# it figures out the caller and just does the same thing
 __tick_fun_tokenize() {
   # This makes sure that when we rerun the code that we are
   # interpreting, we don't try to interpret it again.
@@ -359,6 +362,15 @@ __tick_fun_tokenize() {
 }
 
 ## Runtime {
+enable -n source
+enable -n .
+source() {
+  echo "loading "$1
+  tickParse "$1"
+}
+.() {
+  source "$1"
+}
 __tick_runtime_length() { echo $#; }
 __tick_runtime_first() { echo ${!1}; }
 __tick_runtime_last() { eval 'echo $'${!#}; }
