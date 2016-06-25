@@ -328,6 +328,11 @@ __tick_fun_parse() {
 # can be passed a path to be interpreted or, if that is not passed
 # it figures out the caller and just does the same thing
 __tick_fun_tokenize() {
+  if [ $# -eq "0" ]; then
+    __tick_fun_tokenize "$(caller 1 | cut -d ' ' -f 3)"
+  fi
+  local fname="$1"
+
   # This makes sure that when we rerun the code that we are
   # interpreting, we don't try to interpret it again.
   export __tick_var_tokenized=1
@@ -335,7 +340,7 @@ __tick_fun_tokenize() {
   # Using bash's caller function, which is for debugging, we
   # can find out the name of the program that called us. We 
   # then cat the calling program and push it through our parser
-  local code=$(cat `caller 1 | cut -d ' ' -f 3` | __tick_fun_parse)
+  local code=$(cat $fname | __tick_fun_parse)
 
   # Before the execution we search to see if we emitted any parsing errors
   hasError=`echo "$code" | $GREP "TICKTICK PARSING ERROR" | wc -l`
@@ -365,8 +370,8 @@ __tick_fun_tokenize() {
 enable -n source
 enable -n .
 source() {
-  echo "loading "$1
-  tickParse "$1"
+  # echo "loading "$1
+  builtin . "$1"
 }
 .() {
   source "$1"
