@@ -6,7 +6,7 @@
   people = {
     "HR" : [
       "Alice",
-      "BoB",
+      "Bob",
       "Carol"
     ]
   }
@@ -15,6 +15,6 @@
 firstPerson
 
 echo "Second Person"
-echo `` people.HR[1] ``
+echo `` people.HR[1]``
 
 exit
