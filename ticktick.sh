@@ -374,61 +374,58 @@ __tick_fun_tokenize() {
 }
 
 ## Runtime {
-enable -n source
-enable -n .
-source() {
-  # echo "loading "$1
-  source_temp_path=`mktemp`
-  __tick_fun_tokenize "$1" "debug"
-  ( __tick_fun_tokenize "$1" "debug" ) > $source_temp_path
+if [ $__tick_var_tokenized ]; then 
+  enable -n source
+  enable -n .
+  source() {
+    source_temp_path=`mktemp`
+    ( __tick_fun_tokenize "$1" "debug" ) > $source_temp_path
 
-  echo $source_temp_path
-  #unlink $source_temp_path
-  #builtin . "$1"
-}
-.() {
-  source "$1"
-}
-__tick_runtime_length() { echo $#; }
-__tick_runtime_first() { echo ${!1}; }
-__tick_runtime_last() { eval 'echo $'${!#}; }
-__tick_runtime_pop() { eval unset ${!#}; }
+    builtin source "$source_temp_path"
+    unlink $source_temp_path
+  }
+  .() {
+    source "$1"
+  }
 
-__tick_runtime_shift() {
-  local left=
-  local right=
+  __tick_runtime_length() { echo $#; }
+  __tick_runtime_first() { echo ${!1}; }
+  __tick_runtime_last() { eval 'echo $'${!#}; }
+  __tick_runtime_pop() { eval unset ${!#}; }
 
-  for (( i = 1; i <= $# + 1; i++ )) ; do
-    if [ "$left" ]; then
-      eval "$left=\$$right"
-    fi
-    left=$right
-    right=${!i}
-  done
-  eval unset $left
-}
-__tick_runtime_push() {
-  local value="${1/\'/\\\'}"
-  local base=$2
-  local lastarg=${!#}
+  __tick_runtime_shift() {
+    local left=
+    local right=
 
-  let nextval=${lastarg/$base/}+1
-  nextval=`printf "%012d" $nextval`
+    for (( i = 1; i <= $# + 1; i++ )) ; do
+      if [ "$left" ]; then
+        eval "$left=\$$right"
+      fi
+      left=$right
+      right=${!i}
+    done
+    eval unset $left
+  }
+  __tick_runtime_push() {
+    local value="${1/\'/\\\'}"
+    local base=$2
+    local lastarg=${!#}
 
-  eval $base$nextval=\'$value\'
-}
+    let nextval=${lastarg/$base/}+1
+    nextval=`printf "%012d" $nextval`
 
-tickParse() {
-  eval `echo "$1" | __tick_json_tokenize | __tick_json_parse | tr '\n' ';'`
-}
+    eval $base$nextval=\'$value\'
+  }
 
-tickVars() {
-  echo "@ Line `caller | sed s/\ NULL//`:"
-  set | grep ^__tick_data | sed s/__tick_data_/"  "/
-  echo
-}
+  tickParse() {
+    eval `echo "$1" | __tick_json_tokenize | __tick_json_parse | tr '\n' ';'`
+  }
 
-## } End of Runtime
-
-
-[ $__tick_var_tokenized ] || __tick_fun_tokenize
+  tickVars() {
+    echo "@ Line `caller | sed s/\ NULL//`:"
+    set | grep ^__tick_data | sed s/__tick_data_/"  "/
+    echo
+  }
+else 
+  __tick_fun_tokenize
+fi
