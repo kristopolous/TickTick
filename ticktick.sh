@@ -328,10 +328,10 @@ __tick_fun_parse() {
 # can be passed a path to be interpreted or, if that is not passed
 # it figures out the caller and just does the same thing
 __tick_fun_tokenize() {
-  if [ $# -eq "0" ]; then
-    __tick_fun_tokenize "$(caller 1 | cut -d ' ' -f 3)"
-  fi
+  [ $# -eq "0" ] && __tick_fun_tokenize "$(caller 1 | cut -d ' ' -f 3)"
+
   local fname="$1"
+  local return_debug=$(( $# == 2 | $__tick_var_debug )) 
 
   # This makes sure that when we rerun the code that we are
   # interpreting, we don't try to interpret it again.
@@ -371,6 +371,10 @@ enable -n source
 enable -n .
 source() {
   # echo "loading "$1
+  source_temp_path=`mktemp ticktick.XXXXXXXX`
+
+  echo $source_temp_path
+  unlink $source_temp_path
   builtin . "$1"
 }
 .() {
