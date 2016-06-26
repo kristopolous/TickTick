@@ -381,7 +381,10 @@ if [ $__tick_var_tokenized ]; then
     source_temp_path=`mktemp`
     ( __tick_fun_tokenize "$1" "debug" ) > $source_temp_path
 
+    enable source
     builtin source "$source_temp_path"
+    enable -n source
+
     unlink $source_temp_path
   }
   .() {
