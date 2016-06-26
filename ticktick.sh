@@ -327,11 +327,18 @@ __tick_fun_parse() {
 # The code tokenization and interpretation of bash code.  This
 # can be passed a path to be interpreted or, if that is not passed
 # it figures out the caller and just does the same thing
+#
+# If two arguments are called, then the second acts as a signal to
+# print the tokenized ticktick code and exit.
+#
+# This means in a language with declared arguments the signature
+# would look like this:
+#
+#   __tick_fun_tokenize(path_name, set_to_return_and_not_execute) {
+#
 __tick_fun_tokenize() {
   [ $# -eq "0" ] && __tick_fun_tokenize "$(caller 1 | cut -d ' ' -f 3)"
-
   local fname="$1"
-  local return_debug=$(( $# == 2 | $__tick_var_debug )) 
 
   # This makes sure that when we rerun the code that we are
   # interpreting, we don't try to interpret it again.
@@ -345,7 +352,7 @@ __tick_fun_tokenize() {
   # Before the execution we search to see if we emitted any parsing errors
   hasError=`echo "$code" | $GREP "TICKTICK PARSING ERROR" | wc -l`
 
-  if [ $__tick_var_debug ]; then
+  if [ "$__tick_var_debug" -o $# -eq 2 ]; then
     printf "%s\n" "$code"
     exit 0
   fi
@@ -371,11 +378,13 @@ enable -n source
 enable -n .
 source() {
   # echo "loading "$1
-  source_temp_path=`mktemp ticktick.XXXXXXXX`
+  source_temp_path=`mktemp`
+  __tick_fun_tokenize "$1" "debug"
+  ( __tick_fun_tokenize "$1" "debug" ) > $source_temp_path
 
   echo $source_temp_path
-  unlink $source_temp_path
-  builtin . "$1"
+  #unlink $source_temp_path
+  #builtin . "$1"
 }
 .() {
   source "$1"
