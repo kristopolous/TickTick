@@ -36,7 +36,10 @@ A few array manipulation runtime directives are supported:
  * `delete`            <pre>echo \`\`key.value.delete()\`\`</pre>
  * `items`             <pre>for x in \`\`arr.items()\`\`; do echo "${x}"; done</pre>
 
-Note that this doesn't preclude having variables by those names.  You can have ``key.delete = 1`` and then ``key.delete.delete()``
+Notes: 
+
+ * These feature do not preclude having variables by those names.  You can have ``key.delete = 1`` and then ``key.delete.delete()``
+ * Since TickTick is a Bash-emitting transpiler, things that don't work in bash (such as modifying [in-shell variables](https://github.com/kristopolous/TickTick/issues/5) in double quotes) don't work in TickTick.
 
 Objects
 ---
