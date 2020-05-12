@@ -56,6 +56,7 @@ Miscellaneous
 
 #### tickVars - see the currently defined variables
  * Show all variables: You can see the current values defined in the TickTick world with the `tickVars` routine.
+ * If you don't like the output, there are some options to customize it. Try `tickVars -h` for more information.
 
 #### tickReset - clear the currently defined variables
  * Clear all variables: You can erace any JSON you have created/imported with the `tickReset` routine.
