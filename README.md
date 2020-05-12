@@ -104,7 +104,7 @@ Inline Parsing
       echo "  The ``people.Engineering.length()`` Employees listed are:"
 
       for employee in ``people.Engineering.items()``; do
-        printf "    - %s\n" ${!employee}
+        printf "    - %s\n" "${!employee}"
       done
 
       echo 
