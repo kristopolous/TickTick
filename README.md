@@ -57,6 +57,9 @@ Miscellaneous
 #### tickVars - see the currently defined variables
  * Show all variables: You can see the current values defined in the TickTick world with the `tickVars` routine.
 
+#### tickReset - clear the currently defined variables
+ * Clear all variables: You can erace any JSON you have created/imported with the `tickReset` routine.
+
 #### __tick_var_debug - See the interim bash code
  * Dry run (display compiled code): TickTick is a mini-compiler that emits bash. If you declare `extern __tick_var_debug=1` at the top of your code, then the code will not run but instead print what it would have run.
 
