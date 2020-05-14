@@ -8,7 +8,7 @@ EGREP=egrep
 # // The following code is to make sure
 # // that this runs on various platforms as suggested.
 # See https://github.com/kristopolous/TickTick/issues/26
-if [ `uname` == "SunOS" ]; then
+if [[ `uname` == "SunOS" ]]; then
   GREP=ggrep
   EGREP=gegrep
 fi
@@ -125,7 +125,7 @@ __tick_json_parse_value() {
   prej=${prej/%\"/}
 
   prej="`echo $prej | __tick_json_sanitize_value`"
-  [ "$prej" ] && prej="_$prej"
+  [[ "$prej" ]] && prej="_$prej"
 
   case "$Token" in
     '{') __tick_json_parse_object "$jpath" ;;
@@ -174,10 +174,10 @@ __tick_fun_parse_expression() {
     token=${token/#S/}
     token=${token/%E/}
 
-    if [ $done ]; then
+    if [[ $done ]]; then
       suffix+="$token"
     else
-      if [ -z $quoteToken ]; then
+      if [[ -z $quoteToken ]]; then
         case "$token" in
           #
           # The ( makes sure that you can do key.push = 1, not that you would, but
@@ -207,7 +207,7 @@ __tick_fun_parse_expression() {
             return
             ;;
 
-          [0-9]*[A-Za-z]*[0-9]*) [ -n "$function" ] && arguments+="$token" || Prefix+="$token" ;;
+          [0-9]*[A-Za-z]*[0-9]*) [[ -n "$function" ]] && arguments+="$token" || Prefix+="$token" ;;
           [0-9]*) Prefix+=`printf "%012d" $token` ;;
           '['|.) Prefix+=_ ;;
 
@@ -218,8 +218,8 @@ __tick_fun_parse_expression() {
           [\[\]]) ;;
           =) done=1 ;;
           # Only respect a space if its in the args.
-          ' ') [ -n "$function" ] && arguments+="$token" ;;
-          *) [ -n "$function" ] && arguments+="$token" || Prefix+="$token" ;;
+          ' ') [[ -n "$function" ]] && arguments+="$token" ;;
+          *) [[ -n "$function" ]] && arguments+="$token" || Prefix+="$token" ;;
         esac
       else
         case "$token" in
@@ -245,7 +245,7 @@ __tick_fun_parse_expression() {
     fi
   done
 
-  if [ "$suffix" ]; then
+  if [[ "$suffix" ]]; then
     echo "$suffix" | __tick_json_tokenize | __tick_json_parse
   else
     Prefix="`echo $Prefix | __tick_json_sanitize_value`"
@@ -288,7 +288,7 @@ __tick_fun_parse() {
           # variable
           if (( tickFlag == 1 )); then
             tickFlag=0
-            [ "$code" ] && echo -n "`echo $code | __tick_fun_tokenize_expression | __tick_fun_parse_expression`"
+            [[ "$code" ]] && echo -n "`echo $code | __tick_fun_tokenize_expression | __tick_fun_parse_expression`"
           else
             tickFlag=1
             echo -n "$code"
@@ -337,7 +337,7 @@ __tick_fun_parse() {
 #   __tick_fun_tokenize(path_name, set_to_return_and_not_execute) {
 #
 __tick_fun_tokenize() {
-  [ $# -eq "0" ] && __tick_fun_tokenize "$(caller 1 | cut -d ' ' -f 3)"
+  [[ $# -eq "0" ]] && __tick_fun_tokenize "$(caller 1 | cut -d ' ' -f 3)"
   local fname="$1"
 
   # This makes sure that when we rerun the code that we are
@@ -374,7 +374,7 @@ __tick_fun_tokenize() {
 }
 
 ## Runtime {
-if [ $__tick_var_tokenized ]; then 
+if [[ $__tick_var_tokenized ]]; then 
   enable -n source
   enable -n .
   source() {
