@@ -429,6 +429,12 @@ if [[ $__tick_var_tokenized ]]; then
     set | grep ^__tick_data | sed s/__tick_data_/"  "/
     echo
   }
+
+  tickReset() {
+    for var in     `set | sed -nr 's/^(__tick_data_[^=]+).*/\1/p'`
+      do unset "$var"
+    done
+  }
 else 
   __tick_fun_tokenize
 fi
