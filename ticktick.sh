@@ -426,7 +426,7 @@ if [[ $__tick_var_tokenized ]]; then
 
   tickVars() {
     echo "@ Line `caller | sed s/\ NULL//`:"
-    set | grep ^__tick_data | sed s/__tick_data_/"  "/
+    set | sed -nr /^__tick_data_/s/__tick_data_/"  "/p
     echo
   }
 
