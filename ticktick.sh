@@ -425,9 +425,38 @@ if [[ $__tick_var_tokenized ]]; then
   }
 
   tickVars() {
-    echo "@ Line `caller | sed s/\ NULL//`:"
-    set | sed -nr /^__tick_data_/s/__tick_data_/"  "/p
-    echo
+    local tick_vars_opt='' sup_ln_number='' sup_trailing_nl='' indent="  "
+
+    # Process commandline flags
+    OPTIND=1
+    while getopts ':hiln' tick_vars_opt; do
+      case $tick_vars_opt in
+        h)
+        cat 1>&2 <<-"ENDHELP"
+		USAGE: tickVars [-hiln]
+		-h: Emit this usage information.
+		-i: Suppress the indentation that usually precedes each line of output.
+		-l: Suppress the line number information that usually appears at the beginning of output.
+		-n: Suppress the blank line which usually prints at the end of output.
+		ENDHELP
+        exit 0
+        ;;
+        i)
+        indent=""
+        ;;
+        l)
+        sup_ln_number=yes
+        ;;
+        n)
+        sup_trailing_nl=yes
+        ;;
+        esac
+      done
+
+    [[ -z "$sup_ln_number" ]] && echo "@ Line `caller | sed s/\ NULL//`:"
+    set | sed -nr /^__tick_data_/s/^__tick_data_/"$indent"/p
+    [[ -z "$sup_trailing_nl" ]] && echo
+    return 0
   }
 
   tickReset() {
