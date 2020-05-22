@@ -444,8 +444,8 @@ if [[ $__tick_var_tokenized ]]; then
         i) indent="" ;;
         l) sup_ln_number=yes ;;
         n) sup_trailing_nl=yes ;;
-        esac
-      done
+      esac
+    done
 
     [[ -z "$sup_ln_number" ]] && echo "@ Line `caller | sed s/\ NULL//`:"
     set | sed -nr /^__tick_data_/s/^__tick_data_/"$indent"/p
