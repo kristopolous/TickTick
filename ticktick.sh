@@ -441,15 +441,9 @@ if [[ $__tick_var_tokenized ]]; then
 		ENDHELP
         exit 0
         ;;
-        i)
-        indent=""
-        ;;
-        l)
-        sup_ln_number=yes
-        ;;
-        n)
-        sup_trailing_nl=yes
-        ;;
+        i) indent="" ;;
+        l) sup_ln_number=yes ;;
+        n) sup_trailing_nl=yes ;;
         esac
       done
 
