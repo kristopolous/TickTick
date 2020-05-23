@@ -238,7 +238,7 @@ __tick_fun_parse_expression() {
               Prefix+="$token" 
             fi
             ;;
-          *) Prefix+="$token" ;;
+          *) Prefix+=$(echo "$token" | __tick_json_sanitize_value) ;;
         esac
         (( backslash -- ))
       fi
