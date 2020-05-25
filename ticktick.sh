@@ -171,8 +171,8 @@ __tick_fun_parse_expression() {
   backslash=0
 
   while read -r token; do
-    token=${token/#S/}
-    token=${token/%E/}
+    token=${token#S}
+    token=${token%E}
 
     if [[ $done ]]; then
       suffix+="$token"
@@ -454,7 +454,7 @@ if [[ $__tick_var_tokenized ]]; then
   }
 
   tickReset() {
-    for var in     `set | sed -nr 's/^(__tick_data_[^=]+).*/\1/p'`
+    for var in `set | sed -nr 's/^(__tick_data_[^=]+).*/\1/p'`
       do unset "$var"
     done
   }
