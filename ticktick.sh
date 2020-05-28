@@ -445,7 +445,7 @@ if [[ $__tick_var_tokenized ]]; then
 		-n: Suppress the blank line which usually prints at the end of output.
 		ENDHELP
 	[[ $tick_vars_opt == 'h' ]]
-        exit
+        return
         ;;
       esac
     done
