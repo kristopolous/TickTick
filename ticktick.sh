@@ -1,21 +1,21 @@
 #!/usr/bin/env bash
 
-ARGV=$@
-GREP=grep
-EGREP=egrep
+ARGV=("$@")
+GREP='grep'
+EGREP='egrep'
 
 # Support {{ 
 # // The following code is to make sure
 # // that this runs on various platforms as suggested.
 # See https://github.com/kristopolous/TickTick/issues/26
-if [[ `uname` == "SunOS" ]]; then
+if [[ $(uname) == "SunOS" ]]; then
   GREP=ggrep
   EGREP=gegrep
 fi
 # }} End support
 
 __tick_error() {
-  echo "TICKTICK PARSING ERROR: "$1
+  echo "TICKTICK PARSING ERROR: $1"
 }
 
 # This is from https://github.com/dominictarr/JSON.sh
@@ -42,7 +42,7 @@ __tick_json_parse_array() {
     *)
       while :
       do
-        __tick_json_parse_value "$1" "`printf "%012d" $index`"
+        __tick_json_parse_value "$1" "$(printf "%012d" $index)"
 
         (( index++ ))
         ary+="$Value" 
@@ -106,14 +106,14 @@ __tick_json_sanitize_value() {
   while read -r -n 1 token; do
     case "$token" in
       [\-\\\"\;,=\(\)\[\]{}.\':\ ]) 
-        value+=`printf "%d" \'$token` 
+        value+=$(printf "%d" \'"$token") 
         ;;
       *)
         value+="$token"
         ;;
     esac
   done
-  echo $value
+  echo "$value"
 }
 
 __tick_json_parse_value() {
@@ -124,7 +124,7 @@ __tick_json_parse_value() {
   local prej=${jpath/#\"/}
   prej=${prej/%\"/}
 
-  prej="`echo $prej | __tick_json_sanitize_value`"
+  prej="$(echo "$prej" | __tick_json_sanitize_value)"
   [[ "$prej" ]] && prej="_$prej"
 
   case "$Token" in
@@ -135,7 +135,7 @@ __tick_json_parse_value() {
       Value=$Token 
       Path="$Prefix$prej"
       Path=${Path/#_/}
-      echo __tick_data_${Path// /}=$Value 
+      echo __tick_data_"${Path// /}"="$Value" 
       ;;
   esac
 }
@@ -192,14 +192,15 @@ __tick_fun_parse_expression() {
           ')') 
             function=${function/%(/}
 
-            # For a rational of the method below see: 
+            # For a rational3 of the method below see: 
             # https://github.com/kristopolous/TickTick/wiki/Function-Logic
             case $function in
-              items) echo '${!__tick_data_'"$Prefix"'*}' ;;
-              delete) echo 'unset __tick_data_'${Prefix/%_/} ;;
-              pop) echo '"$( __tick_runtime_last ${!__tick_data_'"$Prefix"'*} )"; __tick_runtime_pop ${!__tick_data_'"$Prefix"'*}' ;;
-              shift) echo '`__tick_runtime_first ${!__tick_data_'"$Prefix"'*}`; __tick_runtime_shift ${!__tick_data_'"$Prefix"'*}' ;;
-              length) echo '`__tick_runtime_length ${!__tick_data_'"$Prefix"'*}`' ;;
+              items) echo '"${!__tick_data_'"$Prefix"'*}"' ;;
+              delete) echo 'unset __tick_data_'"${Prefix/%_/}" ;;
+              pop) echo '"$(__tick_runtime_last ${!__tick_data_'"$Prefix"'*})"; __tick_runtime_pop "${!__tick_data_'"$Prefix"'*}"' ;;
+              shift) echo '"$(__tick_runtime_first ${!__tick_data_'"$Prefix"'*})"; __tick_runtime_shift "${!__tick_data_'"$Prefix"'*}"' ;;
+              length) echo '"$(__tick_runtime_length ${!__tick_data_'"$Prefix"'*})"`' ;;
+              # We should probably document the "args are in double quotes" thing. Also arguments is not local and appears never unset?
               *) echo "__tick_runtime_$function \"$arguments\" __tick_data_$Prefix "'${!__tick_data_'"$Prefix"'*}'
             esac
             unset function
@@ -208,7 +209,7 @@ __tick_fun_parse_expression() {
             ;;
 
           [0-9]*[A-Za-z]*[0-9]*) [[ -n "$function" ]] && arguments+="$token" || Prefix+="$token" ;;
-          [0-9]*) Prefix+=`printf "%012d" $token` ;;
+          [0-9]*) Prefix+=$(printf "%012d" "$token") ;;
           '['|.) Prefix+=_ ;;
 
           [\"\'])
@@ -231,7 +232,7 @@ __tick_fun_parse_expression() {
             Prefix+="$token" 
             ;;
 
-          $quoteToken)
+          "$quoteToken")
             if (( backslash < 0 )); then
               quoteToken=""
             else
@@ -248,8 +249,8 @@ __tick_fun_parse_expression() {
   if [[ "$suffix" ]]; then
     echo "$suffix" | __tick_json_tokenize | __tick_json_parse
   else
-    Prefix="`echo $Prefix | __tick_json_sanitize_value`"
-    echo '${__tick_data_'$Prefix'}'
+    Prefix="$(echo "$Prefix" | __tick_json_sanitize_value)"
+    echo '${__tick_data_'"$Prefix"'}'
   fi
 }
 
@@ -288,7 +289,7 @@ __tick_fun_parse() {
           # variable
           if (( tickFlag == 1 )); then
             tickFlag=0
-            [[ "$code" ]] && echo -n "`echo $code | __tick_fun_tokenize_expression | __tick_fun_parse_expression`"
+            [[ "$code" ]] && echo -n "$(echo "$code" | __tick_fun_tokenize_expression | __tick_fun_parse_expression)"
           else
             tickFlag=1
             echo -n "$code"
@@ -347,12 +348,12 @@ __tick_fun_tokenize() {
   # Using bash's caller function, which is for debugging, we
   # can find out the name of the program that called us. We 
   # then cat the calling program and push it through our parser
-  local code=$(cat $fname | __tick_fun_parse)
+  local code=$(<"$fname" __tick_fun_parse)
 
   # Before the execution we search to see if we emitted any parsing errors
-  hasError=`echo "$code" | $GREP "TICKTICK PARSING ERROR" | wc -l`
+  hasError=$(echo "$code" | $GREP "TICKTICK PARSING ERROR" | wc -l)
 
-  if [ "$__tick_var_debug" -o $# -eq 2 ]; then
+  if [[ $__tick_var_debug || $# -eq 2 ]]; then
     printf "%s\n" "$code"
     exit 0
   fi
@@ -361,7 +362,7 @@ __tick_fun_tokenize() {
   if (( hasError == 0 )); then
     # Take the output and then execute it
 
-    bash -c "$code" -- $ARGV
+    bash -c "$code" -- "${ARGV[@]}"
   else
     echo "Parsing Error Detected, see below"
 
@@ -378,22 +379,22 @@ if [[ $__tick_var_tokenized ]]; then
   enable -n source
   enable -n .
   source() {
-    source_temp_path=`mktemp`
-    ( __tick_fun_tokenize "$1" "debug" ) > $source_temp_path
+    source_temp_path=$(mktemp)
+    ( __tick_fun_tokenize "$1" "debug" ) > "$source_temp_path"
 
     enable source
     builtin source "$source_temp_path"
     enable -n source
 
-    unlink $source_temp_path
+    unlink "$source_temp_path"
   }
   .() {
     source "$1"
   }
 
   __tick_runtime_length() { echo $#; }
-  __tick_runtime_first() { echo ${!1}; }
-  __tick_runtime_last() { eval 'echo $'${!#}; }
+  __tick_runtime_first() { printf %s "${!1}"; }
+  __tick_runtime_last() { eval 'printf %s "$'${!#}'"'; }
   __tick_runtime_pop() { eval unset ${!#}; }
 
   __tick_runtime_shift() {
@@ -407,7 +408,7 @@ if [[ $__tick_var_tokenized ]]; then
       left=$right
       right=${!i}
     done
-    eval unset $left
+    eval unset "$left"
   }
   __tick_runtime_push() {
     local value="${1/\'/\\\'}"
@@ -415,13 +416,13 @@ if [[ $__tick_var_tokenized ]]; then
     local lastarg=${!#}
 
     let nextval=${lastarg/$base/}+1
-    nextval=`printf "%012d" $nextval`
+    nextval=$(printf "%012d" "$nextval")
 
-    eval $base$nextval=\'$value\'
+    eval "$base""$nextval"=\'"$value"\'
   }
 
   tickParse() {
-    eval `echo "$1" | __tick_json_tokenize | __tick_json_parse | tr '\n' ';'`
+    eval "$(<<<"$1" __tick_json_tokenize | __tick_json_parse | tr '\n' ';')"
   }
 
   tickVars() {
@@ -431,7 +432,11 @@ if [[ $__tick_var_tokenized ]]; then
     OPTIND=1
     while getopts ':hiln' tick_vars_opt; do
       case $tick_vars_opt in
-        h)
+        i) indent="" ;;
+        l) sup_ln_number=yes ;;
+        n) sup_trailing_nl=yes ;;
+	h|'?')
+	[[ $tick_vars_opt != 'h' ]] && echo 1>&2 "Invalid option -$OPTARG".
         cat 1>&2 <<-"ENDHELP"
 		USAGE: tickVars [-hiln]
 		-h: Emit this usage information.
@@ -439,22 +444,20 @@ if [[ $__tick_var_tokenized ]]; then
 		-l: Suppress the line number information that usually appears at the beginning of output.
 		-n: Suppress the blank line which usually prints at the end of output.
 		ENDHELP
-        exit 0
+	[[ $tick_vars_opt == 'h' ]]
+        exit
         ;;
-        i) indent="" ;;
-        l) sup_ln_number=yes ;;
-        n) sup_trailing_nl=yes ;;
       esac
     done
 
-    [[ -z "$sup_ln_number" ]] && echo "@ Line `caller | sed s/\ NULL//`:"
+    [[ -z "$sup_ln_number" ]] && echo "@ Line $(caller | sed s/\ NULL//):"
     set | sed -nr /^__tick_data_/s/^__tick_data_/"$indent"/p
     [[ -z "$sup_trailing_nl" ]] && echo
     return 0
   }
 
   tickReset() {
-    for var in `set | sed -nr 's/^(__tick_data_[^=]+).*/\1/p'`
+    for var in $(set | sed -nr 's/^(__tick_data_[^=]+).*/\1/p')
       do unset "$var"
     done
   }
